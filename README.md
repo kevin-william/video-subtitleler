@@ -40,3 +40,15 @@ As variáveis temporárias valem apenas para o processo atual e evitam falhas de
 ## Extração de áudio
 
 Instale FFmpeg e FFprobe com libass; configure `SUBTITLE_FFMPEG_PATH` e `SUBTITLE_FFPROBE_PATH` com nomes no PATH ou caminhos absolutos. FFprobe valida contêiner, duração, resolução de exibição (incluindo rotação) e áudio. A extração produz WAV PCM mono de 16 kHz. Vídeos sem áudio podem receber legendas externas, mas não podem ser transcritos. Timeout de mídia: `SUBTITLE_MEDIA_TIMEOUT`, padrão 600 s. Entrada e arquivos já existentes não são sobrescritos.
+
+## Legendas externas
+
+SRT e WebVTT UTF-8 (BOM aceito) preservam tempos e texto em múltiplas linhas; tags de marcação são convertidas para texto simples. O leitor implementa cues textuais, identificadores e comentários; ignora STYLE, REGION e configurações de posição WebVTT. Não implementa posicionamento ou formatação desses formatos. Tempos inválidos, sobreposição e conteúdo vazio são rejeitados.
+
+JSON segue `SubtitleTrack`, incluindo palavras opcionais:
+
+```json
+{"language":"pt","segments":[{"text":"Olá mundo","start":0.1,"end":1.6,"words":[{"text":"Olá","start":0.1,"end":0.7},{"text":"mundo","start":0.9,"end":1.6}]}]}
+```
+
+Karaokê externo exige palavras realmente alinhadas, normalmente em JSON. SRT/VTT sem alinhamento atendem cinema. Não se fabricam tempos por palavra.

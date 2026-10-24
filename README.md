@@ -36,3 +36,7 @@ python scripts/verify_plan_excerpts.py tasks
 ```
 
 As variáveis temporárias valem apenas para o processo atual e evitam falhas de permissão do ambiente de execução. No Windows, asyncio/TestClient precisam de comunicação local habilitada; bloqueá-la pode paralisar a inicialização do event loop. Os testes não acessam provedores externos nem baixam pesos. A suíte padrão registra skip no teste Whisper real se os recursos locais não forem informados.
+
+## Extração de áudio
+
+Instale FFmpeg e FFprobe com libass; configure `SUBTITLE_FFMPEG_PATH` e `SUBTITLE_FFPROBE_PATH` com nomes no PATH ou caminhos absolutos. FFprobe valida contêiner, duração, resolução de exibição (incluindo rotação) e áudio. A extração produz WAV PCM mono de 16 kHz. Vídeos sem áudio podem receber legendas externas, mas não podem ser transcritos. Timeout de mídia: `SUBTITLE_MEDIA_TIMEOUT`, padrão 600 s. Entrada e arquivos já existentes não são sobrescritos.

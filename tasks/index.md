@@ -19,7 +19,7 @@ Cada uma das **12 tarefas corresponde a um commit**, incluindo código, testes a
 | Ordem | Tarefa | Dependências | Conventional Commit | Status |
 |---|---|---|---|---|
 | 1 | [T01 — Criar pacote, contratos e configuração validada](t01-base-contratos-configuracao.md) | — | `feat(core): define subtitle contracts and settings` | Concluída |
-| 2 | [T02 — Extrair áudio normalizado com FFmpeg](t02-extracao-audio.md) | T01 | `feat(audio): extract normalized audio from mp4` | Não iniciada |
+| 2 | [T02 — Extrair áudio normalizado com FFmpeg](t02-extracao-audio.md) | T01 | `feat(audio): extract normalized audio from mp4` | Concluída |
 | 3 | [T03 — Importar legendas SRT, VTT e JSON](t03-legendas-externas.md) | T01 | `feat(subtitles): import external subtitle tracks` | Não iniciada |
 | 4 | [T04 — Transcrever com Faster-Whisper e tempos por palavra](t04-transcricao-whisper.md) | T01, T02 | `feat(transcription): add faster whisper adapter` | Não iniciada |
 | 5 | [T05 — Refinar texto com LLM e preservar fallback temporal](t05-refinamento-llm-fallback.md) | T01, T04 | `feat(llm): refine subtitles with timestamp safe fallback` | Não iniciada |
@@ -103,11 +103,11 @@ O verificador foi copiado integralmente da skill indicada pelo usuário para tor
 | Métrica | Valor |
 |---|---|
 | Tarefas | 12 |
-| Não iniciadas | 11 |
+| Não iniciadas | 10 |
 | Em andamento | 0 |
-| Concluídas | 1 |
-| Critérios concluídos | 6/72 |
-| Progresso por critérios | 8% |
+| Concluídas | 2 |
+| Critérios concluídos | 12/72 |
+| Progresso por critérios | 17% |
 
 Cada snapshot foi validado isoladamente antes do commit. A suíte completa no ambiente de entrega teve **146 testes aprovados**, sem skips, incluindo Whisper tiny local e voz sintética. FFmpeg real, os dois presets, CLI e servidor Uvicorn com download foram exercitados. Evidências de validação serão registradas junto com T12.
 

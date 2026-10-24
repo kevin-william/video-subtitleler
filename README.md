@@ -124,3 +124,37 @@ O script cria pasta nova com entrada, JSON transcrito, ASS, vídeos dos dois pre
 ```
 
 Após instalar o extra CLI, o comando `video-subtitleler` equivale ao módulo. A ajuda não carrega modelos ou executáveis. `whisper_only` é o padrão. Códigos de saída: 0 sucesso, 2 entrada inválida, 1 falha de processamento. Estilos existentes ou destinos existentes não são sobrescritos silenciosamente.
+
+## API REST
+
+```powershell
+.\.venv\Scripts\python -m uvicorn video_subtitleler.api.app:app --host 127.0.0.1 --port 8000
+```
+
+Swagger em `http://127.0.0.1:8000/docs`. Rotas:
+
+| Método / rota | Resultado |
+|---|---|
+| POST `/api/v1/subtitles/generate` | Multipart; 202 com job_id, status QUEUED e created_at UTC |
+| GET `/api/v1/jobs/{job_id}` | Estado, progresso, etapa atual, etapas e erro |
+| GET `/api/v1/jobs/{job_id}/download` | MP4 concluído via FileResponse |
+
+Campos multipart: `video_file`, `transcription_mode`, `style_preset`, `external_subtitle_file`, `language`, `custom_style` (JSON em string). `external` exige arquivo de legenda. Exemplo em PowerShell:
+
+```powershell
+curl.exe -X POST http://127.0.0.1:8000/api/v1/subtitles/generate -F "video_file=@video.mp4" -F "transcription_mode=external" -F "external_subtitle_file=@legenda.srt" -F "style_preset=movie_series"
+curl.exe http://127.0.0.1:8000/api/v1/jobs/COLE-O-JOB-ID
+curl.exe -o resultado.mp4 http://127.0.0.1:8000/api/v1/jobs/COLE-O-JOB-ID/download
+```
+
+Erros: 422 parâmetros/arquivo inválidos, 413 limite de upload (soma dos arquivos, padrão 500 MB decimais), 404 job/saída ausente, 409 download antes da conclusão ou após falha. O limite é verificado ao salvar os arquivos após o parser multipart; não substitui um limite de corpo de requisição em um proxy caso a aplicação seja futuramente publicada.
+
+Uploads recebem nomes locais fixos em pasta exclusiva; nomes enviados não definem destinos. O conteúdo do MP4 é conferido com FFprobe antes de aceitar o job. BackgroundTasks executa o pipeline síncrono fora do event loop e limpa uploads ao terminar. A aplicação não carrega o modelo nem abre banco na importação; recursos são criados ao primeiro uso.
+
+Validação de servidor real (inicia porta local temporária, faz upload/consulta/download e encerra):
+
+```powershell
+.\.venv\Scripts\python scripts/smoke_http.py --video entrada.mp4 --subtitles palavras.json --output resultado-http.mp4
+```
+
+O script usa preset Instagram, portanto requer JSON alinhado. A validação de entrega observou QUEUED → PROCESSING → COMPLETED, download MP4 e `/docs` 200. Veja [evidências](docs/validation.md).

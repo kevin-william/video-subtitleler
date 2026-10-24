@@ -68,3 +68,11 @@ $env:SUBTITLE_TEST_VOICE = 'C:\caminho\para\voz-em-ingles.wav'
 ```
 
 O teste usa voz em inglês de pelo menos cinco palavras. A validação de entrega utilizou voz sintética local (Microsoft Zira) e Whisper tiny em CPU.
+
+## Refinamento LLM e fallback
+
+Configure `SUBTITLE_LLM_API_KEY`, `SUBTITLE_LLM_BASE_URL`, `SUBTITLE_LLM_MODEL` e `SUBTITLE_LLM_TIMEOUT` (30 s). Não há endpoint padrão apresentado como verificado. O cliente LangChain ChatOpenAI usa JSON mode, chave/endpoint/modelo configuráveis e zero retries. O timeout limita a chamada assíncrona; falhas, quota, indisponibilidade, JSON inválido ou quebra de identidade de palavras retornam a mesma trilha Whisper.
+
+O modelo recebe ids e tempos, mas devolve somente ids/texto agrupado; os tempos são copiados localmente do original. Respostas com tempos extras, palavras ausentes, ids duplicados/fora de ordem ou expansão de uma palavra em várias são rejeitadas. Grupos LLM do Instagram têm 2–4 palavras, com sobra final menor.
+
+O teste do SDK real usa um servidor OpenAI-compatible local. Credenciais e compatibilidade de um provedor externo concreto (incluindo OpenCode Go/DeepSeek) precisam ser verificadas no ambiente de uso. Sem configuração LLM, o modo híbrido continua com Whisper e marca a etapa LLM como SKIPPED. Logs de fallback não incluem exceções que possam revelar chaves.

@@ -76,3 +76,9 @@ Configure `SUBTITLE_LLM_API_KEY`, `SUBTITLE_LLM_BASE_URL`, `SUBTITLE_LLM_MODEL` 
 O modelo recebe ids e tempos, mas devolve somente ids/texto agrupado; os tempos são copiados localmente do original. Respostas com tempos extras, palavras ausentes, ids duplicados/fora de ordem ou expansão de uma palavra em várias são rejeitadas. Grupos LLM do Instagram têm 2–4 palavras, com sobra final menor.
 
 O teste do SDK real usa um servidor OpenAI-compatible local. Credenciais e compatibilidade de um provedor externo concreto (incluindo OpenCode Go/DeepSeek) precisam ser verificadas no ambiente de uso. Sem configuração LLM, o modo híbrido continua com Whisper e marca a etapa LLM como SKIPPED. Logs de fallback não incluem exceções que possam revelar chaves.
+
+## Cinema e séries
+
+`movie_series`: texto branco, Arial configurável, contorno preto 2 px, sombra leve, alinhamento inferior central e no máximo duas linhas por evento. CPL padrão 40, configurável de 37 a 42. Com palavras, a divisão usa seus limites reais; com segmentos externos, blocos longos dividem o intervalo proporcionalmente ao texto, sem alegar sincronismo por palavra. Palavras maiores que CPL são quebradas para caber.
+
+ASS usa centésimos e cores BGR. Intervalos que colapsam para duração zero nessa precisão são rejeitados. Barras invertidas e chaves de texto recebido são representadas por glifos de largura cheia para impedir interpretação como comandos ASS. Verifique a disponibilidade da fonte escolhida; a resolução ASS acompanha o vídeo.

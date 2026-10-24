@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "video-subtitleler"
+version = "0.1.0"
+description = "Transcrição e legendagem de vídeos MP4"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["pydantic>=2.7,<3", "pydantic-settings>=2.2,<3"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "httpx>=0.27,<1"]
+api = ["fastapi>=0.110,<1", "uvicorn>=0.29,<1", "python-multipart>=0.0.9,<1"]
+cli = ["typer>=0.12,<1", "rich>=13,<16"]
+whisper = ["faster-whisper>=1,<2"]
+llm = ["langchain-openai>=0.1,<2"]
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = ["integration_whisper: requer pesos locais e áudio de voz autorizado"]

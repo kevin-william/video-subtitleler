@@ -94,3 +94,9 @@ Overrides são compartilhados pela API/CLI. Não se oferece alinhamento forçado
 FFmpeg com filtro `ass`/libass codifica H.264 e áudio AAC em MP4, preservando duração, dimensões de exibição e presença de áudio. O modo padrão usa CPU (`libx264`); `SUBTITLE_RENDER_ENCODER` aceita opcionalmente `h264_nvenc`, `h264_qsv` ou `h264_amf`, com verificação de disponibilidade e erro explícito se falhar. O filtro ASS pode permanecer em CPU. Hardware não foi validado nesta entrega.
 
 O render usa diretório temporário próprio, nome de ASS controlado, argumentos sem shell e saída publicada somente após FFprobe validar o resultado. Isso evita interpolar caminhos Windows com espaços/apóstrofos na sintaxe do filtro. Falhas removem somente parciais próprios. O destino precisa ser novo.
+
+## Jobs e persistência
+
+SQLite é padrão em `SUBTITLE_DATABASE_PATH` (`work/jobs.sqlite3`); memória serve a testes. UUID e criação UTC com timezone identificam cada job. Transições: QUEUED → PROCESSING → COMPLETED/FAILED, com atualização transacional e progresso monotônico. Somente conclusão com saída pode atingir 100%.
+
+Etapas: extract_audio, transcription, llm_enhancement, generate_ass, burning_subtitles; estados PENDING/RUNNING/COMPLETED/FAILED/SKIPPED. Modelos públicos omitem caminhos internos. Persistência não implica retomada após reinício; jobs interrompidos podem permanecer no estado anterior. Sem fila distribuída ou coordenação entre múltiplos workers.

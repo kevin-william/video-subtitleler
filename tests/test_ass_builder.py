@@ -38,9 +38,32 @@ def test_unsafe_text_cannot_inject_ass():
     assert "{" not in text and "\\" not in text
 
 
-def test_empty_or_short_interval():
+def test_karaoke_active_only_and_pause(track):
+    text = ASSBuilder().build(track, "instagram_music")
+    rows = events(text)
+    assert len(rows) == 3  # first word, silence, second word
+    assert all("Olá" in row and "mundo" in row for row in rows)
+    active = r"\1c&HCCFF00&\1a&H00&"
+    assert rows[0].count(active) == 1
+    assert active not in rows[1]
+    assert rows[2].count(active) == 1
+    assert rows[0].index(active) < rows[0].index("Olá")
+    assert rows[2].index(active) > rows[2].index("Olá")
+
+
+def test_karaoke_groups_and_style():
+    words = tuple(Word(text=f"w{i}", start=i, end=i + 0.5) for i in range(6))
+    track = SubtitleTrack(segments=(Segment(text="words", start=0, end=5.5, words=words),))
+    text = ASSBuilder().build(track, "instagram_music", CustomStyle(active_color="#FFD700", inactive_color="#112233", font_size=60, alignment=2, margin_vertical=200))
+    assert ",60,&H0000D7FF,&H00332211," in text
+    assert all(not ("w0" in row and "w5" in row) for row in events(text))
+
+
+def test_missing_words_empty_or_subcentisecond():
     builder = ASSBuilder()
     with pytest.raises(SubtitleError):
         builder.build(SubtitleTrack(), "movie_series")
+    with pytest.raises(SubtitleError):
+        builder.build(SubtitleTrack(segments=(Segment(text="a", start=0, end=1),)), "instagram_music")
     with pytest.raises(SubtitleError):
         builder.build(SubtitleTrack(segments=(Segment(text="a", start=0, end=0.001),)), "movie_series")

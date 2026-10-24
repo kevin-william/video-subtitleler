@@ -24,7 +24,7 @@ Cada uma das **12 tarefas corresponde a um commit**, incluindo código, testes a
 | 4 | [T04 — Transcrever com Faster-Whisper e tempos por palavra](t04-transcricao-whisper.md) | T01, T02 | `feat(transcription): add faster whisper adapter` | Concluída |
 | 5 | [T05 — Refinar texto com LLM e preservar fallback temporal](t05-refinamento-llm-fallback.md) | T01, T04 | `feat(llm): refine subtitles with timestamp safe fallback` | Concluída |
 | 6 | [T06 — Gerar ASS legível para cinema e séries](t06-ass-cinema.md) | T01 | `feat(ass): generate movie and series subtitles` | Concluída |
-| 7 | [T07 — Adicionar karaokê com destaque exclusivo da palavra ativa](t07-ass-karaoke.md) | T06 | `feat(ass): highlight active words in karaoke subtitles` | Não iniciada |
+| 7 | [T07 — Adicionar karaokê com destaque exclusivo da palavra ativa](t07-ass-karaoke.md) | T06 | `feat(ass): highlight active words in karaoke subtitles` | Concluída |
 | 8 | [T08 — Queimar ASS em MP4 e validar a saída](t08-renderizacao-ffmpeg.md) | T02, T06, T07 | `feat(render): burn ass subtitles into mp4` | Não iniciada |
 | 9 | [T09 — Persistir estado e progresso de jobs](t09-repositorio-jobs.md) | T01 | `feat(jobs): persist job lifecycle in sqlite` | Não iniciada |
 | 10 | [T10 — Orquestrar os três modos com progresso e isolamento](t10-pipeline-integrado.md) | T03, T04, T05, T07, T08, T09 | `feat(pipeline): orchestrate subtitle generation modes` | Não iniciada |
@@ -103,11 +103,11 @@ O verificador foi copiado integralmente da skill indicada pelo usuário para tor
 | Métrica | Valor |
 |---|---|
 | Tarefas | 12 |
-| Não iniciadas | 6 |
+| Não iniciadas | 5 |
 | Em andamento | 0 |
-| Concluídas | 6 |
-| Critérios concluídos | 36/72 |
-| Progresso por critérios | 50% |
+| Concluídas | 7 |
+| Critérios concluídos | 42/72 |
+| Progresso por critérios | 58% |
 
 Cada snapshot foi validado isoladamente antes do commit. A suíte completa no ambiente de entrega teve **146 testes aprovados**, sem skips, incluindo Whisper tiny local e voz sintética. FFmpeg real, os dois presets, CLI e servidor Uvicorn com download foram exercitados. Evidências de validação serão registradas junto com T12.
 

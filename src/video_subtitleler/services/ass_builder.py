@@ -67,7 +67,28 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
         for segment in track.segments:
             if karaoke:
-                raise SubtitleError("Preset Instagram será disponibilizado pela T07.")
+                if not segment.words:
+                    raise SubtitleError("Karaokê exige timestamps reais por palavra; use JSON alinhado ou Whisper.")
+                for offset in range(0, len(segment.words), 5):
+                    group = segment.words[offset:offset + 5]
+                    boundaries = sorted({w.start for w in group} | {w.end for w in group})
+                    for start, end in zip(boundaries, boundaries[1:]):
+                        if round(end * 100) <= round(start * 100):
+                            raise SubtitleError("Palavra ou pausa curta demais para ASS.")
+                        pieces = []
+                        line_length = 0
+                        line_limit = max(8, int((width - 40) / (size * 0.65)))
+                        for word in group:
+                            on = word.start <= start < word.end
+                            rgb = (active if on else inactive)[4:]
+                            alpha = 0 if on else round((1 - opacity) * 255)
+                            separator = "" if not pieces else "\\h"
+                            if pieces and line_length + 1 + len(word.text) > line_limit:
+                                separator = "\\N"
+                                line_length = 0
+                            pieces.append(separator + f"{{\\1c&H{rgb}&\\1a&H{alpha:02X}&}}{literal(word.text)}")
+                            line_length += len(word.text) + 1
+                        emit(start, end, "".join(pieces))
             else:
                 # With words, split on word boundaries and retain real timestamps.
                 if segment.words and all(len(w.text) <= style.cpl for w in segment.words):

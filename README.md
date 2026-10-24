@@ -82,3 +82,9 @@ O teste do SDK real usa um servidor OpenAI-compatible local. Credenciais e compa
 `movie_series`: texto branco, Arial configurável, contorno preto 2 px, sombra leve, alinhamento inferior central e no máximo duas linhas por evento. CPL padrão 40, configurável de 37 a 42. Com palavras, a divisão usa seus limites reais; com segmentos externos, blocos longos dividem o intervalo proporcionalmente ao texto, sem alegar sincronismo por palavra. Palavras maiores que CPL são quebradas para caber.
 
 ASS usa centésimos e cores BGR. Intervalos que colapsam para duração zero nessa precisão são rejeitados. Barras invertidas e chaves de texto recebido são representadas por glifos de largura cheia para impedir interpretação como comandos ASS. Verifique a disponibilidade da fonte escolhida; a resolução ASS acompanha o vídeo.
+
+## Instagram e música
+
+`instagram_music`: Impact configurável, centro da tela, blocos de 2–5 palavras (sobra final menor), palavras inativas brancas com 85% de opacidade e palavra ativa ciano `#00FFCC` por padrão. O gerador usa eventos ASS por intervalo com overrides de cor/opacidade, em vez de tags de karaokê acumulativas: o destaque anterior desaparece e pausas não têm palavra ativa. Todas as palavras do bloco permanecem visíveis. Linhas são divididas por uma estimativa de largura para acomodar vídeos estreitos.
+
+Overrides são compartilhados pela API/CLI. Não se oferece alinhamento forçado de SRT/VTT. A suíte verifica o movimento e a ausência do destaque durante pausa também nos pixels do vídeo renderizado.

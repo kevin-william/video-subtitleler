@@ -25,3 +25,33 @@ def video(tmp_path):
     path = tmp_path / "vídeo com espaço 'teste'.mp4"
     run_media(["ffmpeg", "-nostdin", "-v", "error", "-f", "lavfi", "-i", "color=c=navy:s=640x360:d=2", "-f", "lavfi", "-i", "sine=frequency=440:duration=2", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", str(path)], 30)
     return path
+
+from types import SimpleNamespace
+from video_subtitleler.services.audio import MediaInfo
+from video_subtitleler.services.pipeline import Pipeline
+from video_subtitleler.storage.job_store import MemoryJobStore
+
+@pytest.fixture
+def fake_pipeline(settings, track):
+    calls = []
+    def extract(video, output):
+        calls.append("extract")
+        output.write_bytes(b"wav")
+        return output
+    def transcribe(audio, language):
+        calls.append("transcribe")
+        return track
+    def enhance(source, preset):
+        calls.append("enhance")
+        return source
+    def render(video, ass, output):
+        calls.append("render")
+        assert ass.is_file()
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_bytes(b"rendered-test-video")
+        return output
+    pipeline = Pipeline(settings, MemoryJobStore(), audio=SimpleNamespace(probe=lambda v: MediaInfo(2, 640, 360, True), extract=extract), transcriber=SimpleNamespace(transcribe=transcribe), enhancer=SimpleNamespace(enhance_with_fallback=enhance), renderer=SimpleNamespace(render=render), external_loader=lambda _: track)
+    pipeline.calls = calls
+    return pipeline
+
+

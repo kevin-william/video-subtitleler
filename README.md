@@ -100,3 +100,15 @@ O render usa diretório temporário próprio, nome de ASS controlado, argumentos
 SQLite é padrão em `SUBTITLE_DATABASE_PATH` (`work/jobs.sqlite3`); memória serve a testes. UUID e criação UTC com timezone identificam cada job. Transições: QUEUED → PROCESSING → COMPLETED/FAILED, com atualização transacional e progresso monotônico. Somente conclusão com saída pode atingir 100%.
 
 Etapas: extract_audio, transcription, llm_enhancement, generate_ass, burning_subtitles; estados PENDING/RUNNING/COMPLETED/FAILED/SKIPPED. Modelos públicos omitem caminhos internos. Persistência não implica retomada após reinício; jobs interrompidos podem permanecer no estado anterior. Sem fila distribuída ou coordenação entre múltiplos workers.
+
+## Pipeline e amostras
+
+O pipeline compartilhado isola temporários por job, preserva entrada e mantém saída final. `external` dispensa extração/Whisper/LLM; `whisper_only` extrai/transcreve; `llm_hybrid` acrescenta refinamento com fallback. Falhas reais de mídia/transcrição tornam o job FAILED. Caminhos de saída padrão usam UUID e não colidem entre jobs.
+
+Para reproduzir amostras com voz e pesos locais:
+
+```powershell
+.\.venv\Scripts\python scripts/smoke_demo.py --voice voz.wav --model caminho-dos-pesos --output output/demo
+```
+
+O script cria pasta nova com entrada, JSON transcrito, ASS, vídeos dos dois presets, vídeo híbrido com fallback e evidências JSON. Não baixa modelos. Os arquivos gerados ficam fora do Git.

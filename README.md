@@ -52,3 +52,19 @@ JSON segue `SubtitleTrack`, incluindo palavras opcionais:
 ```
 
 Karaokê externo exige palavras realmente alinhadas, normalmente em JSON. SRT/VTT sem alinhamento atendem cinema. Não se fabricam tempos por palavra.
+
+## Transcrição Whisper
+
+O modelo é carregado sob demanda com `word_timestamps=True`. Padrões: `small`, `cpu`, `int8`; configure `SUBTITLE_WHISPER_MODEL`, `SUBTITLE_WHISPER_DEVICE` e `SUBTITLE_WHISPER_COMPUTE_TYPE`. Um nome de modelo permite download pelo Faster-Whisper na primeira execução; um diretório de pesos local permite operação offline. A suíte usa somente pesos locais informados explicitamente.
+
+O extra Whisper limita PyAV a `>=11,<17`: PyAV 19 removeu o argumento `metadata_errors` usado pelo Faster-Whisper 1.2.1. A combinação validada usa PyAV 16.1.0, registrada no lock. Resultado vazio ou alinhamento inválido gera erro claro; não altera tempos para forçar aprovação.
+
+Teste real com voz autorizada e modelo já baixado:
+
+```powershell
+$env:SUBTITLE_TEST_MODEL = 'C:\caminho\para\pesos-locais'
+$env:SUBTITLE_TEST_VOICE = 'C:\caminho\para\voz-em-ingles.wav'
+.\.venv\Scripts\python -m pytest -m integration_whisper -q
+```
+
+O teste usa voz em inglês de pelo menos cinco palavras. A validação de entrega utilizou voz sintética local (Microsoft Zira) e Whisper tiny em CPU.

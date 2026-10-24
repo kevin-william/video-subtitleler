@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     llm_timeout: Annotated[float, Field(gt=0, allow_inf_nan=False)] = 30.0
     media_timeout: Annotated[float, Field(gt=0, allow_inf_nan=False)] = 600.0
     max_upload_bytes: Annotated[int, Field(gt=0)] = 500_000_000
+    render_encoder: Literal["libx264", "h264_nvenc", "h264_qsv", "h264_amf"] = "libx264"
 
     @field_validator("ffmpeg_path", "ffprobe_path", "whisper_model", "whisper_device", "whisper_compute_type", "llm_model")
     @classmethod

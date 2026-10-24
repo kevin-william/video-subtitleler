@@ -88,3 +88,9 @@ ASS usa centésimos e cores BGR. Intervalos que colapsam para duração zero nes
 `instagram_music`: Impact configurável, centro da tela, blocos de 2–5 palavras (sobra final menor), palavras inativas brancas com 85% de opacidade e palavra ativa ciano `#00FFCC` por padrão. O gerador usa eventos ASS por intervalo com overrides de cor/opacidade, em vez de tags de karaokê acumulativas: o destaque anterior desaparece e pausas não têm palavra ativa. Todas as palavras do bloco permanecem visíveis. Linhas são divididas por uma estimativa de largura para acomodar vídeos estreitos.
 
 Overrides são compartilhados pela API/CLI. Não se oferece alinhamento forçado de SRT/VTT. A suíte verifica o movimento e a ausência do destaque durante pausa também nos pixels do vídeo renderizado.
+
+## Renderização
+
+FFmpeg com filtro `ass`/libass codifica H.264 e áudio AAC em MP4, preservando duração, dimensões de exibição e presença de áudio. O modo padrão usa CPU (`libx264`); `SUBTITLE_RENDER_ENCODER` aceita opcionalmente `h264_nvenc`, `h264_qsv` ou `h264_amf`, com verificação de disponibilidade e erro explícito se falhar. O filtro ASS pode permanecer em CPU. Hardware não foi validado nesta entrega.
+
+O render usa diretório temporário próprio, nome de ASS controlado, argumentos sem shell e saída publicada somente após FFprobe validar o resultado. Isso evita interpolar caminhos Windows com espaços/apóstrofos na sintaxe do filtro. Falhas removem somente parciais próprios. O destino precisa ser novo.

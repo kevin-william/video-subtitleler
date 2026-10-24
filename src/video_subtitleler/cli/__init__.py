@@ -1,0 +1,1 @@
+"""Interface local de processamento."""

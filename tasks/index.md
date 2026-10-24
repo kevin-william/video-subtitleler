@@ -28,7 +28,7 @@ Cada uma das **12 tarefas corresponde a um commit**, incluindo código, testes a
 | 8 | [T08 — Queimar ASS em MP4 e validar a saída](t08-renderizacao-ffmpeg.md) | T02, T06, T07 | `feat(render): burn ass subtitles into mp4` | Concluída |
 | 9 | [T09 — Persistir estado e progresso de jobs](t09-repositorio-jobs.md) | T01 | `feat(jobs): persist job lifecycle in sqlite` | Concluída |
 | 10 | [T10 — Orquestrar os três modos com progresso e isolamento](t10-pipeline-integrado.md) | T03, T04, T05, T07, T08, T09 | `feat(pipeline): orchestrate subtitle generation modes` | Concluída |
-| 11 | [T11 — Expor processamento local pela CLI](t11-cli.md) | T10 | `feat(cli): expose subtitle processing commands` | Não iniciada |
+| 11 | [T11 — Expor processamento local pela CLI](t11-cli.md) | T10 | `feat(cli): expose subtitle processing commands` | Concluída |
 | 12 | [T12 — Expor geração assíncrona, consulta e download pela API](t12-api-background-download.md) | T10 | `feat(api): expose background subtitle jobs and downloads` | Não iniciada |
 
 ## Cadeia de dependências
@@ -103,11 +103,11 @@ O verificador foi copiado integralmente da skill indicada pelo usuário para tor
 | Métrica | Valor |
 |---|---|
 | Tarefas | 12 |
-| Não iniciadas | 2 |
+| Não iniciadas | 1 |
 | Em andamento | 0 |
-| Concluídas | 10 |
-| Critérios concluídos | 60/72 |
-| Progresso por critérios | 83% |
+| Concluídas | 11 |
+| Critérios concluídos | 66/72 |
+| Progresso por critérios | 92% |
 
 Cada snapshot foi validado isoladamente antes do commit. A suíte completa no ambiente de entrega teve **146 testes aprovados**, sem skips, incluindo Whisper tiny local e voz sintética. FFmpeg real, os dois presets, CLI e servidor Uvicorn com download foram exercitados. Evidências de validação serão registradas junto com T12.
 

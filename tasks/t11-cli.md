@@ -2,10 +2,10 @@
 
 > **Instruções do projeto:** consultar [contexto e convenções](index.md#contexto-e-convenções) e preservar as instruções AGENTS fornecidas na sessão.
 
-> **Status:** Não iniciada
-> **Progresso:** 0%
-> **Início:** - | **Fim previsto:** - | **Fim real:** -
-> **Responsável:** A definir
+> **Status:** Concluída; gates externos documentados
+> **Progresso:** 100%
+> **Início:** 24/10/2026 | **Fim previsto:** - | **Fim real:** 24/10/2026
+> **Responsável:** Codex
 > **Dependências:** [T10](t10-pipeline-integrado.md)
 > **Commit único:** `feat(cli): expose subtitle processing commands`
 
@@ -114,21 +114,30 @@ Relatar comandos executados, resultados e gates pendentes. Servidor manual não 
 
 ## 8. Critérios de aceite (DoD)
 
-- [ ] Comportamento de produção descrito implementado e importável.
-- [ ] Testes automatizados desta tarefa entregues no mesmo commit e aprovados; skips/gates relatados.
-- [ ] Documentação diretamente afetada atualizada.
-- [ ] Trechos literais validados por `scripts/verify_plan_excerpts.py`.
-- [ ] Dependências, limites de escopo e regressões dos predecessores conferidos.
-- [ ] Um único commit criado com a mensagem prevista, com status desta tarefa e índice atualizados.
+- [x] Comportamento de produção descrito implementado e importável.
+- [x] Testes automatizados desta tarefa entregues no mesmo commit e aprovados; skips/gates relatados.
+- [x] Documentação diretamente afetada atualizada.
+- [x] Trechos literais validados por `scripts/verify_plan_excerpts.py`.
+- [x] Dependências, limites de escopo e regressões dos predecessores conferidos.
+- [x] Um único commit criado com a mensagem prevista, com status desta tarefa e índice atualizados.
 
 ---
 ## Status de implementação da tarefa
 
 | Item | Status |
 |---|---|
-| Implementação | Não iniciada |
-| Testes | Não iniciados |
-| Documentação de implementação | Não iniciada |
+| Implementação | Concluída |
+| Testes | Automatizados aprovados; gates relatados |
+| Documentação de implementação | README e contratos atualizados |
 | Validação do usuário | Pendente |
 
-**Progresso geral:** 0%
+**Progresso geral:** 100%
+
+## Registro de execução — 24/10/2026
+
+Implementação e testes entregues no mesmo commit previsto. O snapshot isolado deste commit foi validado com `python -m pytest -q tests/test_cli.py` antes do registro. Referências literais e links permanecem válidos.
+
+CliRunner cobriu sucesso, parâmetros inválidos e código de falha. CLI real com Whisper tiny e voz sintética gerou MP4 Instagram; integração external + FFmpeg também aprovada.
+
+Validação humana em player e uso com provedor LLM externo continuam pendentes conforme os gates do índice; não foram apresentados como aprovação automática.
+

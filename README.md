@@ -112,3 +112,15 @@ Para reproduzir amostras com voz e pesos locais:
 ```
 
 O script cria pasta nova com entrada, JSON transcrito, ASS, vídeos dos dois presets, vídeo híbrido com fallback e evidências JSON. Não baixa modelos. Os arquivos gerados ficam fora do Git.
+
+## CLI
+
+```powershell
+.\.venv\Scripts\python -m video_subtitleler.cli --help
+.\.venv\Scripts\python -m video_subtitleler.cli process video.mp4 --style movie_series --output cinema.mp4
+.\.venv\Scripts\python -m video_subtitleler.cli process video.mp4 --style instagram_music --language pt --output reels.mp4
+.\.venv\Scripts\python -m video_subtitleler.cli process video.mp4 --transcription-mode external --external-subtitle legenda.srt --output legendado.mp4
+.\.venv\Scripts\python -m video_subtitleler.cli process video.mp4 --transcription-mode llm_hybrid --style instagram_music --custom-style '{"active_color":"#FFD700","font_size":72}' --output karaoke.mp4
+```
+
+Após instalar o extra CLI, o comando `video-subtitleler` equivale ao módulo. A ajuda não carrega modelos ou executáveis. `whisper_only` é o padrão. Códigos de saída: 0 sucesso, 2 entrada inválida, 1 falha de processamento. Estilos existentes ou destinos existentes não são sobrescritos silenciosamente.

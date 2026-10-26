@@ -43,10 +43,11 @@
                 <label class="preset-card"><input type="radio" name="style_preset" value="instagram_music"><span class="preset-visual karaoke" aria-hidden="true"><span>no <em>seu</em> ritmo.</span></span><strong>Instagram &amp; Música</strong><small>Cada palavra ganha destaque.</small><span class="radio-mark" aria-hidden="true"></span></label>
               </div>
               <div class="field-grid">
-                <label>Processamento<select id="mode" name="transcription_mode"><option value="whisper_only">Whisper direto</option><option value="llm_hybrid">Whisper + refinamento LLM</option></select><small>O refinamento ajusta texto e pontuação.</small></label>
+                <label>Processamento<select id="mode" name="transcription_mode"><option value="whisper_only">Whisper direto</option><option value="llm_hybrid">Whisper + refinamento LLM</option><option value="external">Legenda externa</option></select><small>O refinamento ajusta texto e pontuação.</small></label>
                 <label>Idioma do áudio<select id="language"><option value="auto">Detectar automaticamente</option><option value="pt">Português</option><option value="en">Inglês</option><option value="es">Espanhol</option><option value="custom">Outro idioma…</option></select><small>A detecção é feita a partir da fala.</small></label>
               </div>
               <label id="custom-language-label" hidden>Código do idioma<input id="custom-language" type="text" placeholder="Ex.: fr" maxlength="3" autocapitalize="none"><small>Use 2 ou 3 letras minúsculas.</small></label>
+              <div id="external-panel" class="external-panel" hidden><label>Arquivo de legenda<input id="external-file" type="file" accept=".srt,.vtt,.json" aria-describedby="external-hint"><small id="external-hint">Use SRT, VTT ou JSON. O limite de envio considera os dois arquivos juntos.</small></label></div>
             </fieldset>
             <p id="form-error" class="notice error" role="alert" hidden></p>
             <div class="form-actions"><span id="submit-hint">Seu arquivo será processado neste serviço.</span><button id="submit-button" class="button primary" type="submit" disabled>Gerar legendas <span aria-hidden="true">↗</span></button></div>

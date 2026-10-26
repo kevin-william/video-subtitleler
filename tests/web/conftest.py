@@ -49,6 +49,13 @@ def fake_web_url(fake_pipeline, serve_app):
 
 
 @pytest.fixture
+def real_web_url(settings, serve_app):
+    from video_subtitleler.services.pipeline import Pipeline
+    from video_subtitleler.storage.job_store import MemoryJobStore
+    return serve_app(create_app(pipeline=Pipeline(settings, MemoryJobStore())))
+
+
+@pytest.fixture
 def mock_job(page):
     """Control UI states; deliberately does not claim real transcription."""
     def configure(status="COMPLETED", progress=100, error=None):

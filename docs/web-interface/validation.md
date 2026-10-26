@@ -12,3 +12,7 @@ Os testes usam Settings isolado e não acessam a chave LLM pessoal. A revisão h
 ## W02 — Envio e ciclo inicial
 
 13 testes de navegador aprovados (incluindo shell): multipart, servidor real com pipeline controlado, download, idioma, limites inclusivos, drop, 413/422/500, falha de rede e erro de job com conteúdo textual seguro. Nenhuma chamada LLM externa nestes testes.
+
+## W03 — Legendas externas
+
+16 testes de navegador aprovados (external e regressão de envio). Cinema com SRT e Instagram com JSON foram processados pelo backend real com FFmpeg e baixados. Validados: limite combinado, troca de modo, campos omitidos e rejeição de JSON sem palavras alinhadas pelo backend.

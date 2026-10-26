@@ -2,10 +2,10 @@
 
 > **Instruções do projeto:** manter o [contexto e convenções](index.md#contexto-e-convenções) e as instruções AGENTS fornecidas na sessão.
 
-> **Status:** Não iniciada
-> **Progresso:** 0%
-> **Início:** - | **Fim previsto:** - | **Fim real:** -
-> **Responsável:** A definir
+> **Status:** Concluída
+> **Progresso:** 100%
+> **Início:** 26/10/2026 | **Fim previsto:** - | **Fim real:** 26/10/2026
+> **Responsável:** Codex
 > **Dependências:** [W04](w04-estilo-avancado.md)
 > **Commit único:** `feat(web): show pipeline steps and recover job polling`
 
@@ -87,21 +87,21 @@ Em testes somente de navegador, acrescentar `--browser chromium` se necessário.
 
 ## 8. Critérios de aceite (DoD)
 
-- [ ] Stepper reflete os estados reais, e falhas de consulta se recuperam ou pausam de modo seguro, sem duplicar jobs nem sobrepor requisições.
-- [ ] Testes automatizados positivos, negativos e regressões entregues no mesmo commit e aprovados; gates/ausências registrados.
-- [ ] Documentação afetada, evidências desta tarefa e status do índice atualizados com resultados reais.
-- [ ] Trecho literal validado por `verify_plan_excerpts.py`, links e critérios conferidos.
-- [ ] Dependências, reversibilidade, acessibilidade aplicável e limites de escopo verificados sem mudanças alheias.
-- [ ] Um único commit de implementação criado com a mensagem prevista e arquivos selecionados explicitamente.
+- [x] Stepper reflete os estados reais, e falhas de consulta se recuperam ou pausam de modo seguro, sem duplicar jobs nem sobrepor requisições.
+- [x] Testes automatizados positivos, negativos e regressões entregues no mesmo commit e aprovados; gates/ausências registrados.
+- [x] Documentação afetada, evidências desta tarefa e status do índice atualizados com resultados reais.
+- [x] Trecho literal validado por `verify_plan_excerpts.py`, links e critérios conferidos.
+- [x] Dependências, reversibilidade, acessibilidade aplicável e limites de escopo verificados sem mudanças alheias.
+- [x] Um único commit de implementação criado com a mensagem prevista e arquivos selecionados explicitamente.
 
 ---
 ## Status de implementação da tarefa
 
 | Item | Status |
 |---|---|
-| Implementação | Não iniciada |
-| Testes | Não iniciados |
-| Documentação de implementação | Não iniciada |
+| Implementação | Concluída |
+| Testes | Automatizados aprovados |
+| Documentação de implementação | Atualizada |
 | Validação do usuário | Pendente |
 
-**Progresso geral:** 0%
+**Progresso geral:** 100%

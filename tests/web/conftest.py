@@ -69,7 +69,7 @@ def mock_job(page):
         page.route("**/api/v1/subtitles/generate", post)
         page.route(f"**/api/v1/jobs/{job_id}", lambda route: route.fulfill(json={
             "job_id": job_id, "status": status, "progress_pct": progress,
-            "current_step": "burning_subtitles", "steps": {}, "error": error,
+            "current_step": "burning_subtitles", "steps": {key: "COMPLETED" for key in ["extract_audio", "transcription", "llm_enhancement", "generate_ass", "burning_subtitles"]}, "error": error,
         }))
         return submitted, job_id
     return configure

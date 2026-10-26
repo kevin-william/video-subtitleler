@@ -20,3 +20,7 @@ Os testes usam Settings isolado e não acessam a chave LLM pessoal. A revisão h
 ## W04 — Estilo avançado
 
 23 testes de navegador aprovados (estilo e regressões de envio/external); 7 testes dirigidos repetidos após ajuste dos exemplos de cor automática. JSON verificado com CustomStyle: limites inclusivos, margem/opacidade zero, inteiros, cores, fonte, grade ASS, sincronização e restauração. Campos automáticos não viram overrides.
+
+## W05 — Etapas e recuperação de consultas
+
+34 testes de navegador aprovados. Relógio controlado validou polling sem sobreposição, timeout de 10 s, três recuperações, pausa e retomada do mesmo UUID sem outro POST, 404, protocolo inválido, respostas antigas e término de consultas. Stepper cobre etapas dispensadas e barra usa percentuais reais.

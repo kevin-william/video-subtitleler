@@ -23,16 +23,31 @@ function view(name) {
   document.querySelectorAll('.phase-strip > span').forEach((item, index) => item.classList.toggle('current', index === ['form', 'progress', 'result'].indexOf(name)));
 }
 function showJobError(message) { $('#job-error').textContent = message; $('#job-error').hidden = false; $('#new-from-error').hidden = false; }
+function renderSteps(steps) {
+  const labels = {PENDING: 'Aguardando', RUNNING: 'Em andamento', COMPLETED: 'Concluída', SKIPPED: 'Dispensada', FAILED: 'Falhou'};
+  document.querySelectorAll('[data-step]').forEach((item, index) => {
+    const state = steps[item.dataset.step] || 'PENDING';
+    item.dataset.state = state; item.querySelector('[data-step-status]').textContent = labels[state];
+    item.querySelector('.step-dot').textContent = {COMPLETED: '✓', SKIPPED: '−', FAILED: '!'}[state] || index + 1;
+    if (state === 'RUNNING') item.setAttribute('aria-current', 'step'); else item.removeAttribute('aria-current');
+  });
+}
 const monitor = new JobMonitor((job) => {
   $('#progress-fill').style.width = `${job.progress_pct}%`; $('#progress-bar').setAttribute('aria-valuenow', job.progress_pct); $('#progress-percent').textContent = `${job.progress_pct}%`;
   $('#job-status').textContent = {QUEUED: 'Na fila', PROCESSING: 'Processando', COMPLETED: 'Concluído', FAILED: 'Falhou'}[job.status];
-  $('#job-description').textContent = job.status === 'QUEUED' ? 'Seu vídeo está na fila.' : 'Você pode acompanhar o processamento nesta página.';
+  renderSteps(job.steps);
+  const currentLabel = job.current_step ? document.querySelector(`[data-step="${job.current_step}"] strong`).textContent : '';
+  $('#job-description').textContent = job.status === 'QUEUED' ? 'Seu vídeo está na fila.' : currentLabel;
+  $('#resume-job').hidden = true;
   if (job.status === 'FAILED') { showJobError(job.error || 'Não foi possível processar o vídeo. Confira o arquivo e tente novamente.'); form.setBusy(false); }
   if (job.status === 'COMPLETED') {
     $('#download-link').href = `/api/v1/jobs/${job.job_id}/download`; $('#download-link').download = `${job.job_id}.mp4`;
     form.setBusy(false); view('result'); $('#result-title').focus();
   }
-}, (error) => showJobError(`O acompanhamento foi interrompido. ${error.message} O processamento pode continuar no servidor.`));
+}, (error, resumable) => {
+  showJobError(error.status === 404 ? 'Processamento não encontrado. O servidor pode ter sido reiniciado ou o registro não está disponível.' : `O acompanhamento foi pausado. ${error.message} O processamento pode continuar no servidor.`);
+  $('#job-status').textContent = 'Acompanhamento interrompido'; $('#resume-job').hidden = !resumable;
+}, (message) => { $('#poll-notice').textContent = message; $('#poll-notice').hidden = !message; });
 
 $('#upload-form').addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -43,7 +58,8 @@ $('#upload-form').addEventListener('submit', async (event) => {
   sending = true; form.setBusy(true); $('#submit-hint').textContent = 'Enviando vídeo…';
   try {
     const accepted = await submitVideo(body);
-    $('#job-error').hidden = true; $('#new-from-error').hidden = true;
+    $('#job-error').hidden = true; $('#new-from-error').hidden = true; $('#resume-job').hidden = true; $('#poll-notice').hidden = true;
+    $('#progress-fill').style.width = '0%'; $('#progress-bar').setAttribute('aria-valuenow', 0); $('#progress-percent').textContent = '0%'; $('#job-status').textContent = 'Na fila'; renderSteps({});
     view('progress'); $('#progress-title').focus(); monitor.start(accepted.job_id);
   } catch (error) { form.showError(`${error.message}${!error.status ? ' O envio não será repetido automaticamente; ele pode já ter sido aceito.' : ''}`); form.setBusy(false); }
   finally { sending = false; $('#submit-hint').textContent = 'Seu arquivo será processado neste serviço.'; }
@@ -51,7 +67,8 @@ $('#upload-form').addEventListener('submit', async (event) => {
 function reset() { monitor.stop(); form.reset(); view('form'); $('#choose-file').focus(); }
 $('#new-video').addEventListener('click', reset);
 $('#new-from-error').addEventListener('click', reset);
+$('#resume-job').addEventListener('click', () => { $('#job-error').hidden = true; $('#resume-job').hidden = true; $('#new-from-error').hidden = true; $('#progress-title').focus(); monitor.resume(); });
 $('#retry-config').addEventListener('click', connect);
-window.addEventListener('beforeunload', (event) => { if (sending || monitor.active) { event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('beforeunload', (event) => { if (sending || monitor.unfinished) { event.preventDefault(); event.returnValue = ''; } });
 window.addEventListener('pagehide', () => monitor.stop());
 await connect();

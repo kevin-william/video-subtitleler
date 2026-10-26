@@ -1,0 +1,9 @@
+# Ferramentas web verificadas no Windows/Python 3.12; complementar requirements-dev.lock.
+pytest-playwright==0.10.0
+playwright==1.64.1
+build==1.6.1
+greenlet==3.5.6
+pyee==14.0.0
+python-slugify==9.1.3
+text-unidecode==1.3
+pyproject_hooks==1.3.3

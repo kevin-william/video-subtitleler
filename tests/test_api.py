@@ -20,6 +20,13 @@ def generate(client, **data):
     return client.post("/api/v1/subtitles/generate", files={"video_file": ("../input.mp4", b"fake-test-mp4", "video/mp4")}, data=data)
 
 
+def test_root_opens_web_interface(client):
+    response = client.get("/", follow_redirects=False)
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert "Estúdio de legendas" in response.text
+
+
 def test_api_cycle_and_download(client, fake_pipeline):
     response = generate(client)
     assert response.status_code == 202, response.text

@@ -2,6 +2,12 @@
 
 Serviço Python para transcrever e gravar legendas em MP4, com presets cinema/séries e Instagram/música. O [índice de tarefas](tasks/index.md) registra o progresso e as dependências de cada entrega. Veja o [plano](IMPLEMENTATION_PLAN.md) para o escopo original.
 
+## Interface web
+
+Abra `http://127.0.0.1:8000/` para o estúdio local. Os arquivos HTML/CSS/JavaScript são servidos pelo próprio FastAPI, sem Node ou CDN obrigatório. A documentação técnica permanece em `/docs`.
+
+Para validar a interface: instale `.[dev,api,web-test]`, execute `python -m playwright install chromium` e `python -m pytest tests/web --browser chromium -q`. Versões de teste em `requirements-web-test.lock`; evidências em [docs/web-interface/validation.md](docs/web-interface/validation.md).
+
 ## Instalação
 
 Python 3.12. Em PowerShell, na raiz:
@@ -131,7 +137,7 @@ Após instalar o extra CLI, o comando `video-subtitleler` equivale ao módulo. A
 .\.venv\Scripts\python -m uvicorn video_subtitleler.api.app:app --host 127.0.0.1 --port 8000
 ```
 
-Swagger em `http://127.0.0.1:8000/docs`. Rotas:
+Interface web em `http://127.0.0.1:8000/`; documentação técnica Swagger em `http://127.0.0.1:8000/docs`. Rotas:
 
 | Método / rota | Resultado |
 |---|---|

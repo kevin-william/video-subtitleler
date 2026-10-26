@@ -16,6 +16,7 @@ api = ["fastapi>=0.110,<1", "uvicorn>=0.29,<1", "python-multipart>=0.0.9,<1"]
 cli = ["typer>=0.12,<1", "rich>=13,<16"]
 whisper = ["faster-whisper>=1,<2", "av>=11,<17"]
 llm = ["langchain-openai>=0.1,<2"]
+web-test = ["pytest-playwright>=0.7,<1", "build>=1.2,<2"]
 
 [project.scripts]
 video-subtitleler = "video_subtitleler.cli.main:app"
@@ -23,7 +24,10 @@ video-subtitleler = "video_subtitleler.cli.main:app"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"video_subtitleler.api" = ["static/*.html", "static/*.css", "static/*.js"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--strict-markers"
-markers = ["integration_whisper: requer pesos locais e áudio de voz autorizado"]
+markers = ["integration_whisper: requer pesos locais e áudio de voz autorizado", "web_ui: testes da interface em navegador local"]

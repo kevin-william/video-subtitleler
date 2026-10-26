@@ -24,7 +24,38 @@
       </section>
       <div class="workspace-heading"><h2>Seu próximo vídeo começa aqui</h2><div class="connection" role="status"><span id="connection-dot" class="status-dot"></span><span id="connection-text">Conectando ao serviço…</span><button id="retry-config" type="button" class="text-button" hidden>Tentar novamente</button></div></div>
       <noscript><p class="notice error">Ative o JavaScript para enviar vídeos e acompanhar o processamento. A <a href="/docs">documentação da API</a> continua disponível.</p></noscript>
-      <section id="workspace" class="workspace" aria-label="Criação de legendas"><div class="panel"><p class="eyebrow">01 / PREPARAR</p><h3>Um espaço para suas histórias.</h3><p class="muted">A interface está pronta para conectar seu vídeo ao serviço de legendagem.</p></div></section>
+      <section id="workspace" class="workspace" aria-label="Criação de legendas">
+        <div class="phase-strip" aria-label="Fluxo de criação"><span class="current">01 <b>Preparar</b></span><span>02 <b>Processar</b></span><span>03 <b>Assistir</b></span></div>
+        <div id="form-view" class="form-layout">
+          <form id="upload-form" class="panel" novalidate>
+            <fieldset id="form-fields">
+              <legend class="sr-only">Configurações do vídeo</legend>
+              <div class="section-title"><span class="section-number">01</span><h3>Adicione seu vídeo</h3><span class="tag">MP4</span></div>
+              <div id="dropzone" class="dropzone">
+                <div class="upload-symbol" aria-hidden="true">↑</div><p>Arraste seu vídeo até aqui</p><span class="muted">ou <button type="button" id="choose-file" class="text-button">escolha um arquivo</button></span>
+                <input id="video-file" type="file" accept=".mp4,video/mp4" aria-label="Arquivo de vídeo" hidden>
+                <small id="upload-limit">Consultando limite de envio…</small>
+              </div>
+              <div id="file-info" class="file-info" hidden><span class="file-icon" aria-hidden="true">▶</span><div><strong id="file-name"></strong><small id="file-size"></small></div><button type="button" id="remove-file" class="icon-button" aria-label="Remover vídeo">×</button></div>
+              <div class="section-title options-title"><span class="section-number">02</span><h3>Dê seu estilo</h3></div>
+              <div class="preset-grid" role="group" aria-label="Estilo da legenda">
+                <label class="preset-card"><input type="radio" name="style_preset" value="movie_series" checked><span class="preset-visual cinema" aria-hidden="true"><span>Uma história.<br>Mil possibilidades.</span></span><strong>Cinema &amp; Séries</strong><small>Discreto. Legível. Atemporal.</small><span class="radio-mark" aria-hidden="true"></span></label>
+                <label class="preset-card"><input type="radio" name="style_preset" value="instagram_music"><span class="preset-visual karaoke" aria-hidden="true"><span>no <em>seu</em> ritmo.</span></span><strong>Instagram &amp; Música</strong><small>Cada palavra ganha destaque.</small><span class="radio-mark" aria-hidden="true"></span></label>
+              </div>
+              <div class="field-grid">
+                <label>Processamento<select id="mode" name="transcription_mode"><option value="whisper_only">Whisper direto</option><option value="llm_hybrid">Whisper + refinamento LLM</option></select><small>O refinamento ajusta texto e pontuação.</small></label>
+                <label>Idioma do áudio<select id="language"><option value="auto">Detectar automaticamente</option><option value="pt">Português</option><option value="en">Inglês</option><option value="es">Espanhol</option><option value="custom">Outro idioma…</option></select><small>A detecção é feita a partir da fala.</small></label>
+              </div>
+              <label id="custom-language-label" hidden>Código do idioma<input id="custom-language" type="text" placeholder="Ex.: fr" maxlength="3" autocapitalize="none"><small>Use 2 ou 3 letras minúsculas.</small></label>
+            </fieldset>
+            <p id="form-error" class="notice error" role="alert" hidden></p>
+            <div class="form-actions"><span id="submit-hint">Seu arquivo será processado neste serviço.</span><button id="submit-button" class="button primary" type="submit" disabled>Gerar legendas <span aria-hidden="true">↗</span></button></div>
+          </form>
+          <aside class="side-panel"><p class="eyebrow">UM FLUXO SIMPLES</p><h3>Menos ajustes.<br>Mais histórias.</h3><div class="side-rule"></div><ol class="flow-list"><li><span>1</span><div><strong>Seu vídeo, seu estilo</strong><p>Escolha como suas palavras aparecem na tela.</p></div></li><li><span>2</span><div><strong>A gente cuida do ritmo</strong><p>Áudio, palavras e legendas se encontram no tempo certo.</p></div></li><li><span>3</span><div><strong>Pronto para compartilhar</strong><p>Baixe seu MP4 com as legendas gravadas no vídeo.</p></div></li></ol><p class="side-note">Cinema ou karaokê?<br>Os dois começam com uma boa história.</p></aside>
+        </div>
+        <section id="progress-view" class="panel progress-panel" aria-labelledby="progress-title" hidden><p class="eyebrow">02 / PROCESSAR</p><h3 id="progress-title" tabindex="-1">Seu vídeo está ganhando palavras.</h3><p id="job-description" class="muted" aria-live="polite">Aguardando processamento…</p><div id="progress-bar" class="progress-track" role="progressbar" aria-label="Progresso do vídeo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress-fill"></div></div><p class="progress-meta"><span id="job-status">Na fila</span><strong id="progress-percent">0%</strong></p><p id="job-error" class="notice error" role="alert" hidden></p><button type="button" id="new-from-error" class="button secondary" hidden>Voltar ao envio</button></section>
+        <section id="result-view" class="panel" aria-labelledby="result-title" hidden><p class="eyebrow">03 / ASSISTIR</p><h3 id="result-title" tabindex="-1">Pronto. Sua história pode ser lida.</h3><p class="muted">As legendas já fazem parte do seu vídeo.</p><div class="result-actions"><a id="download-link" class="button primary" download>Baixar vídeo MP4 <span aria-hidden="true">↓</span></a><button id="new-video" class="button secondary" type="button">Processar novo vídeo</button></div></section>
+      </section>
     </main>
     <footer><span>Feito para dar clareza a cada cena.</span><span>MP4 <b>·</b> CINEMA <b>·</b> KARAOKÊ</span></footer>
   </div>

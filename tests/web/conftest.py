@@ -41,3 +41,28 @@ def serve_app():
 @pytest.fixture
 def web_url(settings, serve_app):
     return serve_app(create_app(settings))
+
+
+@pytest.fixture
+def fake_web_url(fake_pipeline, serve_app):
+    return serve_app(create_app(pipeline=fake_pipeline))
+
+
+@pytest.fixture
+def mock_job(page):
+    """Control UI states; deliberately does not claim real transcription."""
+    def configure(status="COMPLETED", progress=100, error=None):
+        job_id = "00000000-0000-4000-8000-000000000001"
+        submitted = []
+
+        def post(route):
+            submitted.append(route.request.post_data_buffer)
+            route.fulfill(status=202, json={"job_id": job_id, "status": "QUEUED"})
+
+        page.route("**/api/v1/subtitles/generate", post)
+        page.route(f"**/api/v1/jobs/{job_id}", lambda route: route.fulfill(json={
+            "job_id": job_id, "status": status, "progress_pct": progress,
+            "current_step": "burning_subtitles", "steps": {}, "error": error,
+        }))
+        return submitted, job_id
+    return configure

@@ -22,7 +22,7 @@ Seis tarefas correspondem a seis commits de implementação. Cada commit inclui 
 | 1 | [W01 — Servir a interface local e a configuração pública](w01-pagina-assets-configuracao.md) | — | `feat(web): serve local interface assets and public upload config` | Concluída | 6/6 |
 | 2 | [W02 — Enviar MP4 e concluir o primeiro ciclo pelo navegador](w02-envio-ciclo-inicial.md) | W01 | `feat(web): submit videos and track subtitle jobs` | Concluída | 6/6 |
 | 3 | [W03 — Processar legendas externas com regras condicionais](w03-legendas-externas.md) | W02 | `feat(web): support external subtitle uploads` | Concluída | 6/6 |
-| 4 | [W04 — Personalizar estilo preservando valores automáticos](w04-estilo-avancado.md) | W03 | `feat(web): add validated subtitle style controls` | Não iniciada | 0/6 |
+| 4 | [W04 — Personalizar estilo preservando valores automáticos](w04-estilo-avancado.md) | W03 | `feat(web): add validated subtitle style controls` | Concluída | 6/6 |
 | 5 | [W05 — Mostrar etapas e recuperar o acompanhamento interrompido](w05-progresso-resiliente.md) | W04 | `feat(web): show pipeline steps and recover job polling` | Não iniciada | 0/6 |
 | 6 | [W06 — Reproduzir o resultado e iniciar outro vídeo com estado limpo](w06-resultado-player-novo-video.md) | W05 | `feat(web): preview subtitle results and reset the workflow` | Não iniciada | 0/6 |
 
@@ -62,10 +62,10 @@ Verificar também links relativos, seis arquivos de tarefa, seis critérios por 
 | Métrica | Valor |
 |---|---|
 | Tarefas | 6 |
-| Não iniciadas | 3 |
+| Não iniciadas | 2 |
 | Em andamento | 0 |
-| Concluídas | 3 |
-| Critérios concluídos | 18/36 |
-| Progresso por critérios | 50,0% |
+| Concluídas | 4 |
+| Critérios concluídos | 24/36 |
+| Progresso por critérios | 66,7% |
 
 Validação documental não significa implementação concluída. Nenhum teste de produção foi executado nesta decomposição; resultados futuros pertencem a `docs/web-interface/validation.md` quando criado em W01.

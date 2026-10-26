@@ -4,9 +4,21 @@ Serviço Python para transcrever e gravar legendas em MP4, com presets cinema/s�
 
 ## Interface web
 
-Abra `http://127.0.0.1:8000/` para o estúdio local. Os arquivos HTML/CSS/JavaScript são servidos pelo próprio FastAPI, sem Node ou CDN obrigatório. A documentação técnica permanece em `/docs`.
+Inicie a aplicação e abra `http://127.0.0.1:8000/`:
 
-Para validar a interface: instale `.[dev,api,web-test]`, execute `python -m playwright install chromium` e `python -m pytest tests/web --browser chromium -q`. Versões de teste em `requirements-web-test.lock`; evidências em [docs/web-interface/validation.md](docs/web-interface/validation.md).
+```powershell
+.\.venv\Scripts\python -m uvicorn video_subtitleler.api.app:app --host 127.0.0.1 --port 8000
+```
+
+1. Escolha ou arraste um vídeo MP4. O limite exibido vem da configuração do serviço e considera vídeo e legenda juntos.
+2. Escolha Cinema ou Instagram, o idioma e o processamento. Use “Whisper + refinamento LLM” para o MiniMax configurado no servidor; “Legenda externa” exige SRT/VTT/JSON, e Instagram exige JSON com palavras alinhadas.
+3. Se quiser, abra “Personalizar estilo”. Campos automáticos preservam os padrões do preset; “Restaurar estilo padrão” remove as personalizações.
+4. Clique em “Gerar legendas” e acompanhe as cinco etapas. Consultas interrompidas tentam reconectar; “Retomar acompanhamento” consulta o mesmo job, sem reenviar o vídeo.
+5. Assista ao resultado, baixe o MP4 ou escolha “Processar novo vídeo”. Se o refinamento não puder ser aplicado, o resultado informa que usou a transcrição original do Whisper.
+
+Mantenha a página aberta durante o processamento: recarregá-la não recupera o acompanhamento e voltar ao envio não cancela o trabalho no servidor. Falhas de codec do navegador não impedem o download. Chaves e configuração de GPU/LLM ficam somente no servidor.
+
+A interface usa assets locais, sem Node ou CDN obrigatório; `/docs` continua sendo documentação técnica. Para os testes, instale `.[dev,api,web-test]`, execute `python -m playwright install chromium` e `python -m pytest tests/web --browser chromium -q`. O Edge instalado pode ser usado com `--browser-channel msedge`. Versões em `requirements-web-test.lock`; evidências em [docs/web-interface/validation.md](docs/web-interface/validation.md).
 
 ## Instalação
 

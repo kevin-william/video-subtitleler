@@ -57,6 +57,7 @@ def test_langchain_real_client_against_local_protocol(settings, track):
     from pydantic import SecretStr
     requests = []
     class Handler(BaseHTTPRequestHandler):
+        protocol_version = "HTTP/1.1"
         def do_POST(self):
             requests.append(json.loads(self.rfile.read(int(self.headers["Content-Length"]))))
             content = {"groups": [{"words": [{"id": 0, "text": "Olá,"}, {"id": 1, "text": "mundo!"}]}]}
@@ -75,9 +76,12 @@ def test_langchain_real_client_against_local_protocol(settings, track):
     thread.start()
     try:
         cfg = type(settings)(_env_file=None, llm_api_key=SecretStr("local-test-only"), llm_base_url=f"http://127.0.0.1:{server.server_port}/v1", llm_timeout=5)
-        result = LLMEnhancer(cfg).enhance_with_fallback(track, "instagram_music")
-        assert result is not track
-        assert result.segments[0].text == "Olá, mundo!"
+        enhancer = LLMEnhancer(cfg)
+        for _ in range(2):
+            result = enhancer.enhance_with_fallback(track, "instagram_music")
+            assert result is not track
+            assert result.segments[0].text == "Olá, mundo!"
+        assert len(requests) == 2
         assert requests[0]["model"] == "deepseek-chat"
         assert requests[0]["response_format"] == {"type": "json_object"}
     finally:

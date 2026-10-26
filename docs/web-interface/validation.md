@@ -24,3 +24,17 @@ Os testes usam Settings isolado e não acessam a chave LLM pessoal. A revisão h
 ## W05 — Etapas e recuperação de consultas
 
 34 testes de navegador aprovados. Relógio controlado validou polling sem sobreposição, timeout de 10 s, três recuperações, pausa e retomada do mesmo UUID sem outro POST, 404, protocolo inválido, respostas antigas e término de consultas. Stepper cobre etapas dispensadas e barra usa percentuais reais.
+
+## W06 — Player, novo vídeo e integração final
+
+- Reprodução, seek, Content-Type video/mp4, Range/206 e download completo aprovados com vídeos H.264/AAC reais dos dois estilos. Nenhuma alteração foi necessária em FileResponse/rota de download.
+- Testes dirigidos iniciais de resultado/API: 23 aprovados. Testes de resultado no Edge instalado: 6 aprovados. Layout 360/1280 px, foco, movimento reduzido, erro de mídia e segundo ciclo limpo verificados.
+- A integração real descobriu um defeito anterior do backend: o SDK reutilizava transporte assíncrono entre chamadas asyncio.run e a segunda falhava com Event loop is closed. Corrigido com transportes SDK próprios por refinamento e fechamento dentro do loop; regressão HTTP/1.1 executa duas chamadas seguidas. As alterações anteriores de provedor/modelo foram preservadas e não incorporadas indiscriminadamente ao commit web.
+- Edge com serviço real, voz sintética, Whisper/CUDA e MiniMax: Cinema COMPLETED em 14,72 s, LLM COMPLETED, download 87.714 bytes; Instagram COMPLETED em 5,44 s, LLM COMPLETED, download 114.844 bytes. Ambos reproduzidos e avançados no player, sem erros JavaScript. Artefatos em output/web-validation/20261026-182155/ e output/web-validation/20261026-182211/.
+- O fallback também foi observado antes da correção e agora é explicado na área de resultado. Capturas desktop/mobile em .tmp/web-qa/ foram inspecionadas visualmente pelo agente; aprovação humana permanece pendente.
+- Suíte final: **193 passed**, sem skips, em 39,89 s; inclui Whisper small real em CUDA/float16. pip check sem conflitos. Wheel e sdist finais construídos, seis assets conferidos e servidos a partir de instalação fora da árvore de fontes.
+- Serviço principal reiniciado sem jobs ativos e verificado em http://127.0.0.1:8000/: raiz, JavaScript, configuração pública, Swagger e OpenAPI respondem 200. Prévia temporária da porta 8765 encerrada.
+
+## Limites da entrega
+
+Sem autenticação, acesso remoto, cancelamento de job, persistência do acompanhamento após reload, histórico ou editor de legendas. A reprodução depende de codec do navegador; o download permanece disponível. Falhas de provedor mantêm o fallback e aviso. Chaves não são enviadas ao browser e a suite padrão não chama provedores externos. O serviço local da porta 8000 foi deixado em execução para o usuário.

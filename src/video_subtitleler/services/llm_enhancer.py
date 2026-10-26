@@ -31,16 +31,30 @@ class LLMEnhancer:
         self.settings = settings
         self.client = client
 
+    async def _invoke(self, messages):
+        if self.client is not None:
+            return await self.client.ainvoke(messages)
+        if not self.settings.llm_api_key or not self.settings.llm_base_url:
+            raise ValueError("provider not configured")
+        from langchain_openai import ChatOpenAI
+        from openai import DefaultAsyncHttpxClient, DefaultHttpxClient
+
+        # asyncio.run creates a loop per refinement. SDK transports must not be
+        # cached across those loops, and must close before the owning loop ends.
+        with DefaultHttpxClient(timeout=self.settings.llm_timeout) as http_client:
+            async with DefaultAsyncHttpxClient(timeout=self.settings.llm_timeout) as http_async_client:
+                client = ChatOpenAI(
+                    api_key=self.settings.llm_api_key.get_secret_value(), base_url=str(self.settings.llm_base_url),
+                    model=self.settings.llm_model, temperature=0.2, timeout=self.settings.llm_timeout,
+                    max_retries=0,
+                    http_client=http_client, http_async_client=http_async_client,
+                ).with_structured_output(Refinement, method="json_mode")
+                return await client.ainvoke(messages)
+
     async def _enhance(self, track: SubtitleTrack, preset: StylePreset) -> SubtitleTrack:
         words = tuple(w for segment in track.segments for w in segment.words)
         if not words or any(not segment.words for segment in track.segments):
             raise ValueError("missing alignment")
-        client = self.client
-        if client is None:
-            if not self.settings.llm_api_key or not self.settings.llm_base_url:
-                raise ValueError("provider not configured")
-            from langchain_openai import ChatOpenAI
-            client = ChatOpenAI(api_key=self.settings.llm_api_key.get_secret_value(), base_url=str(self.settings.llm_base_url), model=self.settings.llm_model, temperature=0.2, timeout=self.settings.llm_timeout, max_retries=0).with_structured_output(Refinement, method="json_mode")
         payload = [{"id": i, "text": w.text, "start": w.start, "end": w.end} for i, w in enumerate(words)]
         import json
         prompt = (
@@ -50,7 +64,7 @@ class LLMEnhancer:
             + ("Agrupe em 2 a 4 palavras, admitindo último grupo menor." if preset == StylePreset.INSTAGRAM_MUSIC else "Agrupe frases com até 80 caracteres, para duas linhas de até 40.")
             + " Responda somente JSON conforme este esquema: " + json.dumps(Refinement.model_json_schema(), ensure_ascii=False)
         )
-        raw = await client.ainvoke([("system", prompt), ("human", json.dumps(payload, ensure_ascii=False))])
+        raw = await self._invoke([("system", prompt), ("human", json.dumps(payload, ensure_ascii=False))])
         refined = raw if isinstance(raw, Refinement) else Refinement.model_validate(raw)
         flattened = [w for group in refined.groups for w in group.words]
         if [w.id for w in flattened] != list(range(len(words))):

@@ -24,7 +24,7 @@ Seis tarefas correspondem a seis commits de implementação. Cada commit inclui 
 | 3 | [W03 — Processar legendas externas com regras condicionais](w03-legendas-externas.md) | W02 | `feat(web): support external subtitle uploads` | Concluída | 6/6 |
 | 4 | [W04 — Personalizar estilo preservando valores automáticos](w04-estilo-avancado.md) | W03 | `feat(web): add validated subtitle style controls` | Concluída | 6/6 |
 | 5 | [W05 — Mostrar etapas e recuperar o acompanhamento interrompido](w05-progresso-resiliente.md) | W04 | `feat(web): show pipeline steps and recover job polling` | Concluída | 6/6 |
-| 6 | [W06 — Reproduzir o resultado e iniciar outro vídeo com estado limpo](w06-resultado-player-novo-video.md) | W05 | `feat(web): preview subtitle results and reset the workflow` | Não iniciada | 0/6 |
+| 6 | [W06 — Reproduzir o resultado e iniciar outro vídeo com estado limpo](w06-resultado-player-novo-video.md) | W05 | `feat(web): preview subtitle results and reset the workflow` | Concluída | 6/6 |
 
 ## Cadeia de dependências
 
@@ -62,10 +62,10 @@ Verificar também links relativos, seis arquivos de tarefa, seis critérios por 
 | Métrica | Valor |
 |---|---|
 | Tarefas | 6 |
-| Não iniciadas | 1 |
+| Não iniciadas | 0 |
 | Em andamento | 0 |
-| Concluídas | 5 |
-| Critérios concluídos | 30/36 |
-| Progresso por critérios | 83,3% |
+| Concluídas | 6 |
+| Critérios concluídos | 36/36 |
+| Progresso por critérios | 100,0% |
 
-Validação documental não significa implementação concluída. Nenhum teste de produção foi executado nesta decomposição; resultados futuros pertencem a `docs/web-interface/validation.md` quando criado em W01.
+A implementação foi validada com 193 testes aprovados, sem skips, incluindo Whisper/CUDA. A revisão humana está pendente. Resultados e limites em [validation.md](../validation.md).

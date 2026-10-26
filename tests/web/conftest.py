@@ -2,12 +2,20 @@
 import socket
 import threading
 import time
+from pathlib import Path
 
 import pytest
 
 pytest.importorskip("playwright.sync_api", reason="Instale o extra web-test para testes de navegador")
+pytest.importorskip("pytest_playwright", reason="Instale o extra web-test para testes de navegador")
 
 from video_subtitleler.api.app import create_app
+
+
+@pytest.fixture(autouse=True)
+def require_browser_installation(browser_type, pytestconfig):
+    if not pytestconfig.getoption("browser_channel") and not Path(browser_type.executable_path).is_file():
+        pytest.skip("Instale o Chromium: python -m playwright install chromium")
 
 
 @pytest.fixture
@@ -58,7 +66,7 @@ def real_web_url(settings, serve_app):
 @pytest.fixture
 def mock_job(page):
     """Control UI states; deliberately does not claim real transcription."""
-    def configure(status="COMPLETED", progress=100, error=None):
+    def configure(status="COMPLETED", progress=100, error=None, steps=None):
         job_id = "00000000-0000-4000-8000-000000000001"
         submitted = []
 
@@ -69,7 +77,7 @@ def mock_job(page):
         page.route("**/api/v1/subtitles/generate", post)
         page.route(f"**/api/v1/jobs/{job_id}", lambda route: route.fulfill(json={
             "job_id": job_id, "status": status, "progress_pct": progress,
-            "current_step": "burning_subtitles", "steps": {key: "COMPLETED" for key in ["extract_audio", "transcription", "llm_enhancement", "generate_ass", "burning_subtitles"]}, "error": error,
+            "current_step": "burning_subtitles", "steps": steps if steps is not None else {key: "COMPLETED" for key in ["extract_audio", "transcription", "llm_enhancement", "generate_ass", "burning_subtitles"]}, "error": error,
         }))
         return submitted, job_id
     return configure

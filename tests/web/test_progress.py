@@ -13,6 +13,7 @@ def progress(status="PROCESSING", percentage=20, steps=None, current="transcript
 def begin(page, url):
     page.clock.install()
     page.goto(url)
+    expect(page.get_by_text("Serviço conectado", exact=True)).to_be_visible()
     page.clock.pause_at(page.evaluate("Date.now()") + 1000)
     page.locator("#video-file").set_input_files({"name": "video.mp4", "mimeType": "video/mp4", "buffer": b"fixture"})
     page.get_by_role("button", name="Gerar legendas").click()

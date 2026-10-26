@@ -82,7 +82,13 @@
           <p class="progress-footnote">O progresso avança por etapas. Mantenha esta página aberta para acompanhar; recarregá-la não recupera o acompanhamento.</p>
           <p id="poll-notice" class="notice" role="status" hidden></p><p id="job-error" class="notice error" role="alert" hidden></p><div class="result-actions"><button id="resume-job" type="button" class="button primary" hidden>Retomar acompanhamento</button><button type="button" id="new-from-error" class="button secondary" hidden>Voltar ao envio</button></div>
         </section>
-        <section id="result-view" class="panel" aria-labelledby="result-title" hidden><p class="eyebrow">03 / ASSISTIR</p><h3 id="result-title" tabindex="-1">Pronto. Sua história pode ser lida.</h3><p class="muted">As legendas já fazem parte do seu vídeo.</p><div class="result-actions"><a id="download-link" class="button primary" download>Baixar vídeo MP4 <span aria-hidden="true">↓</span></a><button id="new-video" class="button secondary" type="button">Processar novo vídeo</button></div></section>
+        <section id="result-view" class="panel result-panel" aria-labelledby="result-title" hidden>
+          <div class="result-heading"><div><p class="eyebrow">03 / ASSISTIR</p><h3 id="result-title" tabindex="-1">Pronto. Sua história pode ser lida.</h3><p class="muted">As legendas já fazem parte do seu vídeo.</p></div><span class="done-mark" aria-hidden="true">✓</span></div>
+          <video id="result-video" controls playsinline preload="metadata" aria-label="Vídeo com legendas"></video>
+          <p id="media-error" class="notice" role="status" hidden>Não foi possível reproduzir este vídeo no navegador. Você ainda pode baixar o MP4 e abri-lo no seu player.</p>
+          <p id="refinement-note" class="notice" role="status" hidden>O refinamento de texto não foi aplicado. Seu vídeo foi concluído com a transcrição original do Whisper e os tempos preservados.</p>
+          <div class="result-actions"><a id="download-link" class="button primary" download>Baixar vídeo MP4 <span aria-hidden="true">↓</span></a><button id="new-video" class="button secondary" type="button">Processar novo vídeo</button><span class="result-format">MP4 · LEGENDAS GRAVADAS</span></div>
+        </section>
       </section>
     </main>
     <footer><span>Feito para dar clareza a cada cena.</span><span>MP4 <b>·</b> CINEMA <b>·</b> KARAOKÊ</span></footer>

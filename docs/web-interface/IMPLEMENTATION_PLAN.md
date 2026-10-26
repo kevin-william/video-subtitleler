@@ -1,6 +1,6 @@
 # Plano de implementação — Interface web do Video Subtitleler
 
-Data: 26/10/2026. Status: planejado; implementação não iniciada.
+Data: 26/10/2026. Status: implementado e validado; revisão humana pendente. Evidências em [validation.md](validation.md). Os fatos da seção 1 registram a base inspecionada antes da implementação.
 
 ## 1. Origem, objetivo e base verificada
 
@@ -124,6 +124,7 @@ Todos os caminhos abaixo são relativos à raiz do repositório. Arquivos novos 
 | tests/web/test_progress.py | W05 | — |
 | tests/web/test_result.py | W06 | — |
 | tests/test_api.py | W01 troca a expectativa do redirect | W03/W06 se contratos existentes forem exercitados |
+| src/video_subtitleler/services/llm_enhancer.py; tests/test_llm_enhancer.py | W06, correção necessária descoberta na integração real | Isolar/fechar transportes por refinamento e regredir duas chamadas persistentes consecutivas |
 | pyproject.toml, requirements-web-test.lock (novo) | W01 | Atualizar apenas se uma tarefa introduzir dependência justificada |
 | README.md e docs/web-interface/validation.md (novo registro na execução) | W01 | Cada tarefa registra seu comportamento e evidências |
 
@@ -178,3 +179,7 @@ Teste padrão de navegador deve usar API controlada e não chamar provedores nem
 | Tailwind/Alpine via CDN | Adaptado na seção 2 para CSS/JS locais |
 
 Documentação oficial consultada em 26/10/2026: [StaticFiles no FastAPI](https://fastapi.tiangolo.com/tutorial/static-files/), [dados de pacote setuptools](https://setuptools.pypa.io/en/latest/userguide/datafiles.html) e [Playwright Python com pytest](https://playwright.dev/python/docs/intro). São referências técnicas; a evidência de funcionamento virá da execução das tarefas.
+
+## 13. Ajuste comprovado durante a execução
+
+W06 incluiu uma correção de backend necessária ao segundo processamento híbrido: o cliente HTTP assíncrono era reutilizado depois que asyncio.run encerrava seu loop. A reprodução real mostrou primeira chamada aprovada e segunda com “Event loop is closed”. Cada refinamento agora possui transportes SDK próprios, encerrados dentro do loop; o teste local HTTP/1.1 cobre duas chamadas consecutivas e os dois presets foram verificados com MiniMax real. Isso não altera modelo, chave, prompt, timestamps nem política de fallback.

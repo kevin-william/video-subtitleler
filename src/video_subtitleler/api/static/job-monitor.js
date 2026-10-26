@@ -2,7 +2,7 @@ import {fetchJSON, validateProgress} from './api-client.js';
 
 export class JobMonitor {
   constructor(onUpdate, onError, onWaiting = () => {}) { this.onUpdate = onUpdate; this.onError = onError; this.onWaiting = onWaiting; this.generation = 0; this.active = false; this.unfinished = false; }
-  stop() { this.generation += 1; clearTimeout(this.timer); this.controller?.abort(); this.active = false; this.unfinished = false; }
+  stop() { this.generation += 1; clearTimeout(this.timer); this.controller?.abort(); this.active = false; this.unfinished = false; this.jobId = null; }
   resume() { if (this.jobId && !this.active) this.start(this.jobId); }
   start(jobId) {
     this.stop(); this.jobId = jobId; this.active = true; this.unfinished = true; this.recovery = 0;

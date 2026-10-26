@@ -42,6 +42,10 @@ const monitor = new JobMonitor((job) => {
   if (job.status === 'FAILED') { showJobError(job.error || 'Não foi possível processar o vídeo. Confira o arquivo e tente novamente.'); form.setBusy(false); }
   if (job.status === 'COMPLETED') {
     $('#download-link').href = `/api/v1/jobs/${job.job_id}/download`; $('#download-link').download = `${job.job_id}.mp4`;
+    $('#media-error').hidden = true;
+    $('#refinement-note').hidden = !($('#mode').value === 'llm_hybrid' && job.steps.llm_enhancement === 'SKIPPED');
+    $('#result-video').src = `/api/v1/jobs/${job.job_id}/download`;
+    $('#result-video').load();
     form.setBusy(false); view('result'); $('#result-title').focus();
   }
 }, (error, resumable) => {
@@ -64,11 +68,20 @@ $('#upload-form').addEventListener('submit', async (event) => {
   } catch (error) { form.showError(`${error.message}${!error.status ? ' O envio não será repetido automaticamente; ele pode já ter sido aceito.' : ''}`); form.setBusy(false); }
   finally { sending = false; $('#submit-hint').textContent = 'Seu arquivo será processado neste serviço.'; }
 });
-function reset() { monitor.stop(); form.reset(); view('form'); $('#choose-file').focus(); }
+function reset() {
+  monitor.stop();
+  const video = $('#result-video'); video.pause(); video.removeAttribute('src'); video.load();
+  $('#media-error').hidden = true; $('#download-link').removeAttribute('href');
+  $('#refinement-note').hidden = true;
+  $('#job-error').hidden = true; $('#poll-notice').hidden = true; $('#resume-job').hidden = true; $('#new-from-error').hidden = true;
+  $('#progress-fill').style.width = '0%'; $('#progress-percent').textContent = '0%'; $('#progress-bar').setAttribute('aria-valuenow', 0); renderSteps({});
+  form.reset(); view('form'); $('#choose-file').focus();
+}
 $('#new-video').addEventListener('click', reset);
 $('#new-from-error').addEventListener('click', reset);
 $('#resume-job').addEventListener('click', () => { $('#job-error').hidden = true; $('#resume-job').hidden = true; $('#new-from-error').hidden = true; $('#progress-title').focus(); monitor.resume(); });
 $('#retry-config').addEventListener('click', connect);
+$('#result-video').addEventListener('error', () => { if (!$('#result-view').hidden && $('#result-video').hasAttribute('src')) $('#media-error').hidden = false; });
 window.addEventListener('beforeunload', (event) => { if (sending || monitor.unfinished) { event.preventDefault(); event.returnValue = ''; } });
 window.addEventListener('pagehide', () => monitor.stop());
 await connect();

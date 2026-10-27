@@ -77,6 +77,26 @@ O modelo é carregado sob demanda com `word_timestamps=True`. Padrões: `small`,
 
 O extra Whisper limita PyAV a `>=11,<17`: PyAV 19 removeu o argumento `metadata_errors` usado pelo Faster-Whisper 1.2.1. A combinação validada usa PyAV 16.1.0, registrada no lock. Resultado vazio ou alinhamento inválido gera erro claro; não altera tempos para forçar aprovação.
 
+### GPU NVIDIA no Windows
+
+Instale as bibliotecas CUDA 12/cuDNN 9 no ambiente do projeto:
+
+```powershell
+.\.venv\Scripts\python -m pip install -e ".[whisper,cuda]"
+```
+
+As versões NVIDIA validadas estão em `requirements-cuda.lock` (opcional: `pip install -r requirements-cuda.lock`). Requisitos upstream: [Faster-Whisper](https://github.com/SYSTRAN/faster-whisper#gpu).
+
+No `.env`, use:
+
+```dotenv
+SUBTITLE_WHISPER_MODEL=small
+SUBTITLE_WHISPER_DEVICE=cuda
+SUBTITLE_WHISPER_COMPUTE_TYPE=float16
+```
+
+Reinicie a aplicação após alterar a configuração. O adaptador registra as pastas de DLLs dos pacotes NVIDIA do ambiente Python atual ao carregar o Whisper em `cuda`/`auto`, sem alterar o PATH global. Ter driver com suporte a CUDA ou PyTorch com CUDA 13 em outro ambiente não fornece as DLLs CUDA 12 exigidas pelo Faster-Whisper. Os padrões gerais continuam `cpu`/`int8`; `.env.example` é portátil. Para reduzir o consumo de VRAM, pode-se usar `int8_float16`.
+
 Teste real com voz autorizada e modelo já baixado:
 
 ```powershell
@@ -87,13 +107,26 @@ $env:SUBTITLE_TEST_VOICE = 'C:\caminho\para\voz-em-ingles.wav'
 
 O teste usa voz em inglês de pelo menos cinco palavras. A validação de entrega utilizou voz sintética local (Microsoft Zira) e Whisper tiny em CPU.
 
+Para executar esse teste na GPU, defina também `SUBTITLE_TEST_DEVICE=cuda` e `SUBTITLE_TEST_COMPUTE_TYPE=float16`; use `SUBTITLE_TEST_MODEL` para indicar o diretório local do modelo a validar.
+
 ## Refinamento LLM e fallback
 
 Configure `SUBTITLE_LLM_API_KEY`, `SUBTITLE_LLM_BASE_URL`, `SUBTITLE_LLM_MODEL` e `SUBTITLE_LLM_TIMEOUT` (30 s). Não há endpoint padrão apresentado como verificado. O cliente LangChain ChatOpenAI usa JSON mode, chave/endpoint/modelo configuráveis e zero retries. O timeout limita a chamada assíncrona; falhas, quota, indisponibilidade, JSON inválido ou quebra de identidade de palavras retornam a mesma trilha Whisper.
 
 O modelo recebe ids e tempos, mas devolve somente ids/texto agrupado; os tempos são copiados localmente do original. Respostas com tempos extras, palavras ausentes, ids duplicados/fora de ordem ou expansão de uma palavra em várias são rejeitadas. Grupos LLM do Instagram têm 2–4 palavras, com sobra final menor.
 
-O teste do SDK real usa um servidor OpenAI-compatible local. Credenciais e compatibilidade de um provedor externo concreto (incluindo OpenCode Go/DeepSeek) precisam ser verificadas no ambiente de uso. Sem configuração LLM, o modo híbrido continua com Whisper e marca a etapa LLM como SKIPPED. Logs de fallback não incluem exceções que possam revelar chaves.
+O teste do SDK real usa um servidor OpenAI-compatible local. OpenCode Go foi validado adicionalmente com chamadas reais ao MiniMax M3.1 Flash nos dois presets, usando legenda sintética. Sem configuração LLM, o modo híbrido continua com Whisper e marca a etapa LLM como SKIPPED. Logs de fallback não incluem exceções que possam revelar chaves.
+
+Configuração OpenCode Go (chave somente no `.env`, ignorado pelo Git):
+
+```dotenv
+SUBTITLE_LLM_API_KEY=sua-chave-local
+SUBTITLE_LLM_BASE_URL=https://opencode.ai/inference/go/openai/v1
+SUBTITLE_LLM_MODEL=minimax-m3.1-flash
+SUBTITLE_LLM_TIMEOUT=30
+```
+
+MiniMax M3.1 Flash é a opção MiniMax de menor preço na [tabela Go consultada em 24/10/2026](https://opencode.ai/docs/go/); o consumo conta para a franquia da assinatura. A documentação direciona Go a agentes de programação; a aceitação das chamadas de validação não garante suporte contínuo a aplicações de legendagem. O cliente identifica-se como `video-subtitleler/0.1.0` e envia `x-opencode-session` por refinamento, sem imitar outro aplicativo. Para usar o refinamento, selecione o modo `llm_hybrid`; o modo `whisper_only` não chama a LLM. A qualidade das correções varia; a validação preserva identidade, quantidade e tempos das palavras e recorre ao original em caso de falha.
 
 ## Cinema e séries
 
@@ -156,6 +189,10 @@ Interface web em `http://127.0.0.1:8000/`; documentação técnica Swagger em `h
 | POST `/api/v1/subtitles/generate` | Multipart; 202 com job_id, status QUEUED e created_at UTC |
 | GET `/api/v1/jobs/{job_id}` | Estado, progresso, etapa atual, etapas e erro |
 | GET `/api/v1/jobs/{job_id}/download` | MP4 concluído via FileResponse |
+| GET `/health` ou `/api/v1/health` | Diagnóstico de integridade (SQLite, disco, FFmpeg, Whisper, LLM) |
+| GET `/healthz` | Probe de liveness leve para orquestradores (200 OK) |
+| GET `/metrics` | Métricas no padrão de texto Prometheus |
+| GET `/api/v1/metrics` | Métricas consolidadas em formato JSON |
 
 Campos multipart: `video_file`, `transcription_mode`, `style_preset`, `external_subtitle_file`, `language`, `custom_style` (JSON em string). `external` exige arquivo de legenda. Exemplo em PowerShell:
 
@@ -176,3 +213,19 @@ Validação de servidor real (inicia porta local temporária, faz upload/consult
 ```
 
 O script usa preset Instagram, portanto requer JSON alinhado. A validação de entrega observou QUEUED → PROCESSING → COMPLETED, download MP4 e `/docs` 200. Veja [evidências](docs/validation.md).
+
+## Observabilidade
+
+A aplicação dispõe de instrumentação nativa para monitoramento e diagnóstico:
+
+* **Logs contextuais com `job_id`**: O módulo `video_subtitleler.observability` fornece `get_logger`, `job_context` e `configure_logging`. Todo log emitido durante a execução de um job carrega automaticamente o `[job_id=...]` correspondente via `contextvars`. Suporta formatação padrão textual ou JSON para ingestão centralizada (Fluentbit, Datadog, CloudWatch).
+* **Métricas Prometheus & JSON**: Middleware HTTP e pipeline rastreiam automaticamente:
+  * `video_subtitles_jobs_active` (gauge)
+  * `video_subtitles_jobs_total` (counter por status, modo e preset)
+  * `video_subtitles_job_duration_seconds` (summary com contagem, soma, mín/máx/méd)
+  * `video_subtitles_step_duration_seconds` (summary por etapa do pipeline)
+  * `video_subtitles_http_requests_total` e `video_subtitles_http_request_duration_seconds`
+  * Exportação disponível em `/metrics` (texto Prometheus padrão) e `/api/v1/metrics` (JSON estruturado).
+* **Health Checks**:
+  * `/healthz`: endpoint ultraleve de liveness probe para orquestradores (K8s/Docker).
+  * `/health` e `/api/v1/health`: checagem de prontidão e diagnóstico com status de conectividade do SQLite, espaço livre em disco (`work_dir`/`output_dir`), presença dos binários `ffmpeg`/`ffprobe` e configurações do Whisper/LLM. Retorna 200 (healthy/degraded) ou 503 (unhealthy).

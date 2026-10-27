@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     whisper_compute_type: str = "int8"
     llm_api_key: SecretStr | None = Field(default=None, exclude=True, repr=False)
     llm_base_url: HttpUrl | None = None
-    llm_model: str = "deepseek-chat"
+    llm_model: str = "minimax-m3.1-flash"
     llm_timeout: Annotated[float, Field(gt=0, allow_inf_nan=False)] = 30.0
     media_timeout: Annotated[float, Field(gt=0, allow_inf_nan=False)] = 600.0
     max_upload_bytes: Annotated[int, Field(gt=0)] = 500_000_000

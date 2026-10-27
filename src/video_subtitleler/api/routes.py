@@ -5,26 +5,33 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from video_subtitleler.models.schema import CustomStyle, JobAccepted, JobProgress, JobStatus, StylePreset, SubtitleRequest, TranscriptionMode
+from video_subtitleler.observability import check_health, get_logger, job_context, metrics
 from video_subtitleler.services.audio import MediaError
 from video_subtitleler.services.external_subtitles import SubtitleError
 from video_subtitleler.services.pipeline import Pipeline
 from video_subtitleler.storage.job_store import JobNotFound
 from .dependencies import get_pipeline
 
+logger = get_logger(__name__)
 router = APIRouter(prefix="/api/v1")
 PipelineDependency = Annotated[Pipeline, Depends(get_pipeline)]
 
 
 def execute_job(pipeline, request, job_id, temporary):
-    try:
-        pipeline.run(request, job_id)
-    finally:
-        temporary.cleanup()
+    with job_context(job_id):
+        logger.info("Executando job em background: %s", job_id)
+        try:
+            pipeline.run(request, job_id)
+            logger.info("Job em background concluído: %s", job_id)
+        except Exception:
+            logger.exception("Erro não tratado durante execução do job %s", job_id)
+        finally:
+            temporary.cleanup()
 
 
 async def save_upload(upload: UploadFile, path: Path, remaining: int) -> int:
@@ -109,3 +116,14 @@ def download(job_id: UUID, pipeline: PipelineDependency):
     if job.output_path is None or not job.output_path.is_file():
         raise HTTPException(404, "Arquivo de saída não encontrado.")
     return FileResponse(job.output_path, media_type="video/mp4", filename=f"{job.job_id}.mp4")
+
+
+@router.get("/health")
+def health(pipeline: PipelineDependency):
+    result = check_health(pipeline.settings, pipeline.store)
+    return JSONResponse(content=result, status_code=result["http_code"])
+
+
+@router.get("/metrics")
+def get_metrics():
+    return metrics.as_dict()

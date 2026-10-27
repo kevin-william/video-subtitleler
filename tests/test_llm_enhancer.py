@@ -49,6 +49,36 @@ def test_unconfigured_provider_fallback(settings, track):
     assert LLMEnhancer(settings).enhance_with_fallback(track, "movie_series") is track
 
 
+def test_opencode_identifies_application_and_refinement_session(settings, track, monkeypatch):
+    sdk = pytest.importorskip("langchain_openai")
+    from pydantic import SecretStr
+    from uuid import UUID
+    calls = []
+
+    class Client:
+        def __init__(self, **kwargs):
+            calls.append(kwargs)
+
+        def with_structured_output(self, *args, **kwargs):
+            return client_returning({"groups": [{"words": [
+                {"id": 0, "text": "Olá,"}, {"id": 1, "text": "mundo!"}
+            ]}]})
+
+    monkeypatch.setattr(sdk, "ChatOpenAI", Client)
+    cfg = type(settings)(
+        _env_file=None, llm_api_key=SecretStr("local-test-only"),
+        llm_base_url="https://opencode.ai/inference/go/openai/v1",
+        llm_model="minimax-m3.1-flash",
+    )
+    enhancer = LLMEnhancer(cfg)
+    for _ in range(2):
+        assert enhancer.enhance_with_fallback(track, "movie_series") is not track
+    headers = [call["default_headers"] for call in calls]
+    assert all(h["User-Agent"] == "video-subtitleler/0.1.0" for h in headers)
+    assert all(UUID(h["x-opencode-session"]) for h in headers)
+    assert headers[0]["x-opencode-session"] != headers[1]["x-opencode-session"]
+
+
 def test_langchain_real_client_against_local_protocol(settings, track):
     pytest.importorskip("langchain_openai")
     import json
@@ -75,14 +105,14 @@ def test_langchain_real_client_against_local_protocol(settings, track):
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
-        cfg = type(settings)(_env_file=None, llm_api_key=SecretStr("local-test-only"), llm_base_url=f"http://127.0.0.1:{server.server_port}/v1", llm_timeout=5)
+        cfg = type(settings)(_env_file=None, llm_api_key=SecretStr("local-test-only"), llm_base_url=f"http://127.0.0.1:{server.server_port}/v1", llm_model="minimax-m3.1-flash", llm_timeout=5)
         enhancer = LLMEnhancer(cfg)
         for _ in range(2):
             result = enhancer.enhance_with_fallback(track, "instagram_music")
             assert result is not track
             assert result.segments[0].text == "Olá, mundo!"
         assert len(requests) == 2
-        assert requests[0]["model"] == "deepseek-chat"
+        assert requests[0]["model"] == "minimax-m3.1-flash"
         assert requests[0]["response_format"] == {"type": "json_object"}
     finally:
         server.shutdown()

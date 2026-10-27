@@ -22,7 +22,41 @@ O Whisper tiny foi baixado para `.models/`, ignorado pelo Git; não há download
 
 ## Gates ainda externos
 
-Não houve chamada a OpenCode Go/DeepSeek nem outro provedor LLM externo: faltam endpoint/credenciais configurados. Aceleração de hardware não foi executada. A inspeção automatizada e de quadros não substitui a aprovação humana do vídeo em player. Estes limites não impedem o uso do fluxo CPU/Whisper ou external validado.
+OpenCode Go/MiniMax foi validado com chamadas externas sintéticas conforme registro abaixo; outros provedores não foram verificados. A renderização com NVENC não foi executada; a transcrição CUDA foi validada conforme registro abaixo. A inspeção automatizada e de quadros não substitui a aprovação humana do vídeo em player. Estes limites não impedem o uso do fluxo CPU/Whisper ou external validado.
+
+## Validação adicional da RTX 3050 — 24/10/2026
+
+- GPU: NVIDIA GeForce RTX 3050 6GB Laptop GPU, 6144 MiB, driver 617.14. CTranslate2 4.8.3 reconheceu uma GPU e suporte a `float16`.
+- O ambiente `C:\workspace\python\.venv` contém PyTorch 2.9.0+cu130 e DLLs CUDA 13; não contém Faster-Whisper. O primeiro teste no ambiente do projeto falhou por ausência de `cublas64_12.dll`. As bibliotecas compatíveis CUDA 12/cuDNN 9 foram instaladas somente na `.venv` deste projeto; versões em `requirements-cuda.lock`.
+- O adaptador registra as pastas de DLLs dos pacotes NVIDIA do ambiente atual ao carregar Whisper em CUDA no Windows. Não altera o PATH global nem depende da `.venv` compartilhada.
+- `.env` local configurado para `cuda`/`float16` e pesos locais de `Systran/faster-whisper-small`, revisão `536b0662742c02347bc0e980a01041f333bce120`, baixados em `.models/`.
+- Transcrição real pela classe `Transcriber`, usando `Settings()` do `.env` e `output/demo/voice.wav`: dispositivo efetivo `cuda`, cálculo `float16`, 16 palavras com timestamps; texto: “Hello world. This is a subtitle synchronization test. Each word should appear at the correct time.”
+- Tempo observado: 11,29 s incluindo carga do modelo. Memória total da GPU observada após transcrição: 731 MiB. São medições de uma amostra curta, sem garantia de consumo ou desempenho em vídeos longos.
+- Suíte final com `SUBTITLE_TEST_DEVICE=cuda`, `SUBTITLE_TEST_COMPUTE_TYPE=float16`, modelo small e voz locais: **147 passed** em 10,41 s, sem skips. `pip check`: No broken requirements found.
+
+## OpenCode Go / MiniMax — 24/10/2026
+
+- Chave fornecida pelo usuário no `.env`, mantida fora de logs e do Git. Modelo `minimax-m3.1-flash`; base URL `https://opencode.ai/inference/go/openai/v1`. Escolhido como a opção MiniMax de menor preço na documentação Go consultada nesta data.
+- Cliente ChatOpenAI com JSON mode, zero retries e timeout de 30 s. Identificação verdadeira `video-subtitleler/0.1.0` e UUID em `x-opencode-session` por refinamento.
+- Duas chamadas externas reais, sem fallback, com oito palavras sintéticas em português: cinema em 15,04 s e Instagram em 1,94 s. IDs completos e ordenados, nenhum timestamp alterado, grupos Instagram de quatro palavras. Cinema corrigiu acentos e pontuação; Instagram corrigiu “ola” para “olá”, mas manteve “e” onde o contexto pedia “é”. A aceitação estrutural não garante correção linguística completa.
+- Go é documentado para tráfego de agentes de programação. As chamadas de legenda sintética foram aceitas, mas não comprovam suporte contínuo a esta categoria de aplicação. Nenhum cabeçalho imita agente de terceiros.
+- Suíte final, incluindo integração Whisper small/CUDA e testes locais do cliente LLM: **148 passed** em 9,52 s, sem skips. A suíte não faz chamadas externas à LLM; estas foram verificadas separadamente. `pip check` sem conflitos.
+
+## Serviço em execução — 26/10/2026
+
+Verificação feita contra o processo já ativo em `http://127.0.0.1:8000`, usando o MP4 sintético local `output/demo/run-d1y5lizn/input.mp4` (7,71 s). `/docs` e `/openapi.json` retornaram 200; `/` retorna 404 porque não existe página inicial configurada.
+
+| Modo | Upload | Resultado | Tempo até concluir | Download |
+|---|---|---|---|---|
+| external | 202 | COMPLETED | 1,25 s | 200 |
+| whisper_only | 202 | COMPLETED | 6,58 s | 200 |
+| llm_hybrid | 202 | COMPLETED, LLM COMPLETED | 6,11 s | 200 |
+
+Consultas de progresso responderam durante o processamento. Os três arquivos baixados passaram pelo FFprobe: vídeo H.264 1280×720, áudio AAC, duração 7,708980 s. Evidências e MP4s em `output/diagnostics/20261026-173724/`; o modo híbrido chamou a LLM de fato, sem fallback. São testes curtos e não comprovam desempenho ou correção de vídeos arbitrários.
+
+Suíte executada separadamente: **147 passed, 1 skipped**, em 6,20 s. O skip corresponde ao teste Whisper real sem as variáveis de recursos locais; a transcrição real foi exercitada nos uploads HTTP acima. Nenhuma alteração funcional foi feita no serviço durante este diagnóstico.
+
+Respostas a entradas inválidas também verificadas: upload ausente 422, MP4 inválido 422, job inexistente 404.
 
 ## Ajustes encontrados na validação
 

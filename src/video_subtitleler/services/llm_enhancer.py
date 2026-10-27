@@ -3,6 +3,7 @@
 import asyncio
 import logging
 from typing import Annotated
+from uuid import uuid4
 
 from pydantic import Field
 
@@ -39,6 +40,9 @@ class LLMEnhancer:
         from langchain_openai import ChatOpenAI
         from openai import DefaultAsyncHttpxClient, DefaultHttpxClient
 
+        headers = {"User-Agent": "video-subtitleler/0.1.0"}
+        if self.settings.llm_base_url.host == "opencode.ai":
+            headers["x-opencode-session"] = str(uuid4())
         # asyncio.run creates a loop per refinement. SDK transports must not be
         # cached across those loops, and must close before the owning loop ends.
         with DefaultHttpxClient(timeout=self.settings.llm_timeout) as http_client:
@@ -46,7 +50,7 @@ class LLMEnhancer:
                 client = ChatOpenAI(
                     api_key=self.settings.llm_api_key.get_secret_value(), base_url=str(self.settings.llm_base_url),
                     model=self.settings.llm_model, temperature=0.2, timeout=self.settings.llm_timeout,
-                    max_retries=0,
+                    max_retries=0, default_headers=headers,
                     http_client=http_client, http_async_client=http_async_client,
                 ).with_structured_output(Refinement, method="json_mode")
                 return await client.ainvoke(messages)

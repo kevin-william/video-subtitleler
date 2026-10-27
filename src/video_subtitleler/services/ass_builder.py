@@ -37,7 +37,17 @@ class ASSBuilder:
         style = style or CustomStyle()
         karaoke = preset == StylePreset.INSTAGRAM_MUSIC
         font = style.font_name or ("Impact" if karaoke else "Arial")
-        size = style.font_size or (max(24, round(height * 0.07)) if karaoke else max(18, round(height * 0.045)))
+        if style.font_size:
+            size = style.font_size
+        elif karaoke:
+            size = max(24, round(height * 0.07))
+        else:
+            base_size = max(18, round(height * 0.045))
+            if width < height:
+                max_width_size = max(12, int((width - 40) / (style.cpl * 0.55)))
+                size = min(base_size, max_width_size)
+            else:
+                size = base_size
         alignment = style.alignment or (5 if karaoke else 2)
         margin = style.margin_vertical if style.margin_vertical is not None else round(height * 0.06)
         active = color(style.active_color or ("#00FFCC" if karaoke else "#FFFFFF"))

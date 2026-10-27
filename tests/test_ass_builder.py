@@ -67,3 +67,44 @@ def test_missing_words_empty_or_subcentisecond():
         builder.build(SubtitleTrack(segments=(Segment(text="a", start=0, end=1),)), "instagram_music")
     with pytest.raises(SubtitleError):
         builder.build(SubtitleTrack(segments=(Segment(text="a", start=0, end=0.001),)), "movie_series")
+
+
+def test_wrap_style_is_zero():
+    track = SubtitleTrack(segments=(Segment(text="teste", start=0, end=1),))
+    text = ASSBuilder().build(track, "movie_series")
+    assert "WrapStyle: 0" in text
+
+
+def test_large_font_adaptive_cpl_and_up_to_three_lines():
+    # In vertical video 1080x1920 with large font 80, effective CPL will be ~23
+    track = SubtitleTrack(segments=(Segment(text="Esta frase possui um texto longo o suficiente para precisar quebrar em várias linhas", start=0, end=10),))
+    text = ASSBuilder().build(track, "movie_series", CustomStyle(font_size=80), width=1080, height=1920)
+    rows = events(text)
+    assert len(rows) >= 1
+    for event in rows:
+        event_lines = event.split(",", 9)[9].split("\\N")
+        assert len(event_lines) <= 3
+        # Each line should be within the adaptive CPL (usable_width=1040, 1040 / (80 * 0.55) = 23)
+        assert all(len(line) <= 24 for line in event_lines)
+
+
+def test_font_size_safe_ceiling_clamping():
+    # If font size 200 is set on a 640x360 video, it must be clamped to safe ceiling
+    track = SubtitleTrack(segments=(Segment(text="teste seguro", start=0, end=1),))
+    text = ASSBuilder().build(track, "movie_series", CustomStyle(font_size=200), width=640, height=360)
+    # Check that style doesn't use 200, but clamped safe size (<= 136)
+    match = re.search(r"Style:\s*Default,[^,]+,(\d+),", text)
+    assert match is not None
+    used_size = int(match.group(1))
+    assert used_size < 200
+    assert used_size <= 136
+
+
+def test_karaoke_large_font_adapts_group_size():
+    words = tuple(Word(text=f"palavra{i}", start=i, end=i + 0.5) for i in range(10))
+    track = SubtitleTrack(segments=(Segment(text="frase", start=0, end=10, words=words),))
+    # In 1080x1920 with font_size=80, line_limit <= 27, group_size <= 4
+    text = ASSBuilder().build(track, "instagram_music", CustomStyle(font_size=80), width=1080, height=1920)
+    rows = events(text)
+    # Ensure words are grouped into smaller chunks (not 5 words together)
+    assert all(not ("palavra0" in r and "palavra4" in r) for r in rows)

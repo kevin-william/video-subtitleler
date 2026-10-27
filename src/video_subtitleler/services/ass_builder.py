@@ -37,10 +37,18 @@ class ASSBuilder:
         style = style or CustomStyle()
         karaoke = preset == StylePreset.INSTAGRAM_MUSIC
         font = style.font_name or ("Impact" if karaoke else "Arial")
+        char_ratio = 0.48 if (karaoke or (style.font_name and style.font_name.lower() == "impact")) else 0.55
+        usable_width = max(100, width - 40)
+        margin = style.margin_vertical if style.margin_vertical is not None else round(height * 0.06)
+
+        max_h_size = max(12, int(usable_width / (8 * char_ratio)))
+        max_v_size = max(12, int((height - margin) / (2 * 1.35)))
+        max_safe_size = min(max_h_size, max_v_size)
+
         if style.font_size:
-            size = style.font_size
+            size = min(style.font_size, max_safe_size)
         elif karaoke:
-            size = max(24, round(height * 0.07))
+            size = min(max_safe_size, max(24, round(height * 0.07)))
         else:
             base_size = max(18, round(height * 0.045))
             if width < height:
@@ -48,8 +56,10 @@ class ASSBuilder:
                 size = min(base_size, max_width_size)
             else:
                 size = base_size
+            size = min(size, max_safe_size)
+
+        effective_cpl = max(10, min(style.cpl, int(usable_width / (size * char_ratio))))
         alignment = style.alignment or (5 if karaoke else 2)
-        margin = style.margin_vertical if style.margin_vertical is not None else round(height * 0.06)
         active = color(style.active_color or ("#00FFCC" if karaoke else "#FFFFFF"))
         inactive = color(style.inactive_color or "#FFFFFF")
         opacity = style.inactive_opacity if style.inactive_opacity is not None else 0.85
@@ -57,7 +67,7 @@ class ASSBuilder:
 ScriptType: v4.00+
 PlayResX: {width}
 PlayResY: {height}
-WrapStyle: 2
+WrapStyle: 0
 ScaledBorderAndShadow: yes
 
 [V4+ Styles]
@@ -79,15 +89,23 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             if karaoke:
                 if not segment.words:
                     raise SubtitleError("Karaokê exige timestamps reais por palavra; use JSON alinhado ou Whisper.")
-                for offset in range(0, len(segment.words), 5):
-                    group = segment.words[offset:offset + 5]
+                line_limit = max(8, int(usable_width / (size * char_ratio)))
+                if line_limit <= 15:
+                    group_size = 2
+                elif line_limit <= 22:
+                    group_size = 3
+                elif line_limit <= 30:
+                    group_size = 4
+                else:
+                    group_size = 5
+                for offset in range(0, len(segment.words), group_size):
+                    group = segment.words[offset:offset + group_size]
                     boundaries = sorted({w.start for w in group} | {w.end for w in group})
                     for start, end in zip(boundaries, boundaries[1:]):
                         if round(end * 100) <= round(start * 100):
                             raise SubtitleError("Palavra ou pausa curta demais para ASS.")
                         pieces = []
                         line_length = 0
-                        line_limit = max(8, int((width - 40) / (size * 0.65)))
                         for word in group:
                             on = word.start <= start < word.end
                             rgb = (active if on else inactive)[4:]
@@ -100,22 +118,24 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                             line_length += len(word.text) + 1
                         emit(start, end, "".join(pieces))
             else:
+                can_fit_3_lines = (3 * size * 1.35 + margin) <= height
+                max_lines = 3 if (effective_cpl < style.cpl and can_fit_3_lines) else 2
                 # With words, split on word boundaries and retain real timestamps.
-                if segment.words and all(len(w.text) <= style.cpl for w in segment.words):
+                if segment.words and all(len(w.text) <= effective_cpl for w in segment.words):
                     groups, current = [], []
                     for word in segment.words:
                         candidate = " ".join(w.text for w in [*current, word])
-                        if current and len(lines(candidate, style.cpl)) > 2:
+                        if current and len(lines(candidate, effective_cpl)) > max_lines:
                             groups.append(current)
                             current = []
                         current.append(word)
                     if current:
                         groups.append(current)
                     for group in groups:
-                        emit(group[0].start, group[-1].end, "\\N".join(literal(line) for line in lines(" ".join(w.text for w in group), style.cpl)))
+                        emit(group[0].start, group[-1].end, "\\N".join(literal(line) for line in lines(" ".join(w.text for w in group), effective_cpl)))
                 else:
-                    wrapped = lines(segment.text, style.cpl)
-                    blocks = [wrapped[i:i + 2] for i in range(0, len(wrapped), 2)]
+                    wrapped = lines(segment.text, effective_cpl)
+                    blocks = [wrapped[i:i + max_lines] for i in range(0, len(wrapped), max_lines)]
                     total = sum(sum(len(line) for line in block) for block in blocks)
                     cursor = segment.start
                     for index, block in enumerate(blocks):
